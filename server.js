@@ -20,6 +20,9 @@ if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust reverse proxy (Vercel / Cloudflare / Nginx) for secure HTTPS cookies
+app.set('trust proxy', 1);
+
 // Set EJS as templating engine
 app.set('view engine', 'ejs');
 const viewsDir = fs.existsSync(path.join(process.cwd(), 'views'))
