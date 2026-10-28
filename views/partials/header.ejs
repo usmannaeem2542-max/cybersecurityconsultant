@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Usman Naeem Cyber Security Consulting — Independent cyber security consultant based in Dubai, UAE. Offensive security, vulnerability assessments, penetration testing, and ISO 27001 readiness.">
+  <meta name="keywords" content="cyber security consultant dubai, penetration testing uae, vulnerability assessment, ethical hacker dubai, iso 27001 consultant">
+  <meta name="author" content="Usman Naeem">
+  <title><%= pageTitle || 'Usman Naeem Cyber Security Consulting | Independent Consultant Dubai' %></title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+
+  <!-- Sticky Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top custom-nav" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#home" id="navLogo">
+        <span class="brand-icon-box">
+          <i class="bi bi-shield-check"></i>
+        </span>
+        <span class="brand-text">
+          <strong>Usman Naeem</strong> <span class="brand-accent">Cyber Security</span>
+        </span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent" aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-3">
+          <li class="nav-item">
+            <a class="nav-link" href="/#home">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#services">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#how-i-work">How I Work</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#contact">Contact</a>
+          </li>
+          <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin') { %>
+            <li class="nav-item">
+              <a class="nav-link text-teal fw-semibold" href="/admin" id="navAdminLink">
+                <i class="bi bi-shield-check me-1"></i> Admin
+              </a>
+            </li>
+          <% } %>
+          <li class="nav-item ms-lg-2">
+            <a class="btn btn-teal-glow btn-sm px-3 py-2" href="/booking" id="navDiscoveryBtn">
+              <i class="bi bi-calendar2-check me-1"></i> Book a free discovery call
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>

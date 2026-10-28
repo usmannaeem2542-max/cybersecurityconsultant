@@ -1,0 +1,80 @@
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row g-4 justify-content-between align-items-center pb-4 border-bottom-navy">
+        <div class="col-md-5">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="brand-icon-box">
+              <i class="bi bi-shield-check"></i>
+            </span>
+            <span class="brand-text fs-5">
+              <strong>Usman Naeem</strong> <span class="brand-accent">Cyber Security</span>
+            </span>
+          </div>
+          <p class="footer-desc text-muted mb-0">
+            Independent cyber security consulting helping organizations proactively uncover gaps, strengthen defenses, and build resilient infrastructure before attackers strike.
+          </p>
+        </div>
+
+        <div class="col-md-3">
+          <h6 class="footer-heading">Direct Reach</h6>
+          <p class="mb-1 text-muted small"><i class="bi bi-geo-alt text-teal me-2"></i>Dubai, UAE · Remote Worldwide</p>
+          <p class="mb-1 text-muted small"><i class="bi bi-envelope text-teal me-2"></i><a href="mailto:<%= typeof email !== 'undefined' ? email : 'usman@usmancybersecurity.com' %>" class="footer-link"><%= typeof email !== 'undefined' ? email : 'usman@usmancybersecurity.com' %></a></p>
+          <p class="mb-0 text-muted small"><i class="bi bi-clock text-teal me-2"></i>Mon–Fri 9am–6pm GST</p>
+        </div>
+
+        <div class="col-md-3 text-md-end">
+          <h6 class="footer-heading">Quick Navigation</h6>
+          <div class="footer-links-grid">
+            <a href="/#services" class="footer-link">Services</a>
+            <a href="/#how-i-work" class="footer-link">How I Work</a>
+            <a href="/#about" class="footer-link">About</a>
+            <a href="/#credentials" class="footer-link">Credentials</a>
+            <a href="/#contact" class="footer-link">Contact</a>
+            <a href="/admin" class="footer-link"><i class="bi bi-shield-lock me-1"></i>Admin Portal</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Small line required by spec -->
+      <div class="pt-4 text-center">
+        <p class="footer-byline mb-1">
+          <strong><%= typeof brandName !== 'undefined' ? brandName : 'Usman Naeem Cyber Security Consulting' %></strong> · by <strong><%= typeof consultantName !== 'undefined' ? consultantName : 'Usman Naeem' %></strong>
+        </p>
+        <p class="small text-muted mb-0">
+          &copy; <%= new Date().getFullYear() %> <%= typeof brandName !== 'undefined' ? brandName : 'Usman Naeem Cyber Security Consulting' %>. All rights reserved. Strict confidentiality guaranteed on all security engagements.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- Interactive script for Navbar state and UI Polish -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navbar = document.getElementById('mainNav');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 40) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+
+      // Close mobile navbar on nav link click
+      const navLinks = document.querySelectorAll('.navbar-nav .nav-link, .navbar-nav .btn');
+      const navCollapse = document.getElementById('navContent');
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (navCollapse.classList.contains('show')) {
+            const bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+            if (bsCollapse) bsCollapse.hide();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

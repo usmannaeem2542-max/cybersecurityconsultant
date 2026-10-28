@@ -1,0 +1,16 @@
+{
+  "name": "usman-naeem-cyber-security-consulting",
+  "version": "1.0.0",
+  "description": "Independent cyber security consultant based in Dubai, UAE",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "ejs": "^3.1.10",
+    "express": "^4.22.3",
+    "express-session": "^1.19.0"
+  }
+}

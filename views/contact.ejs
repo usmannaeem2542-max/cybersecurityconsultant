@@ -1,0 +1,153 @@
+<%- include('partials/header') %>
+
+<main class="py-5">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-9 col-xl-8">
+        
+        <div class="booking-card p-4 p-md-5">
+          <div class="text-center mb-4">
+            <div class="section-tag mb-2">
+              <i class="bi bi-chat-right-dots"></i> Direct Inquiry
+            </div>
+            <h1 class="h2 mb-2">Contact Usman Naeem</h1>
+            <p class="text-muted small">
+              Reach out directly for general inquiries, confidential RFP scopes, or penetration testing advisory.
+            </p>
+          </div>
+
+          <!-- Success Alert -->
+          <% if (successMessage) { %>
+            <div class="alert alert-success d-flex align-items-center gap-3 p-4 mb-4" role="alert">
+              <i class="bi bi-check-circle-fill fs-3 text-success flex-shrink-0"></i>
+              <div>
+                <h5 class="alert-heading mb-1 text-white">Inquiry Received</h5>
+                <p class="mb-0 text-light"><%= successMessage %></p>
+                <div class="small text-muted mt-1">(Demonstration mode: Nothing is permanently saved to a database yet).</div>
+              </div>
+            </div>
+            <div class="text-center">
+              <a href="/" class="btn btn-teal-glow px-4 py-2 me-2">
+                <i class="bi bi-house me-1"></i> Return to Home
+              </a>
+              <a href="/booking" class="btn btn-outline-teal px-4 py-2">
+                <i class="bi bi-calendar2-check me-1"></i> Book Discovery Call
+              </a>
+            </div>
+          <% } else { %>
+
+            <!-- Validation Errors -->
+            <% if (errors && errors.length > 0) { %>
+              <div class="alert alert-danger d-flex align-items-start gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
+                <div>
+                  <strong>Please correct the following:</strong>
+                  <ul class="mb-0 mt-1 ps-3">
+                    <% errors.forEach(err => { %>
+                      <li><%= err %></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </div>
+            <% } %>
+
+            <!-- Contact Form -->
+            <form action="/contact" method="POST" id="mainContactForm">
+              
+              <!-- Anti-bot Honeypot Field (Invisible to legitimate human users) -->
+              <div class="hp-trap" style="display: none !important; visibility: hidden !important;" aria-hidden="true">
+                <label for="hp_website">Do not fill this field</label>
+                <input type="text" name="website" id="hp_website" tabindex="-1" autocomplete="off">
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="contactName" class="form-label text-light">Full Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="contactName" 
+                    name="name" 
+                    placeholder="e.g. Alex Morgan" 
+                    maxlength="100" 
+                    value="<%= formData.name || '' %>" 
+                    required
+                  >
+                </div>
+
+                <div class="col-md-6">
+                  <label for="contactEmail" class="form-label text-light">Work Email *</label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="contactEmail" 
+                    name="email" 
+                    placeholder="alex@company.com" 
+                    maxlength="100" 
+                    value="<%= formData.email || '' %>" 
+                    required
+                  >
+                </div>
+
+                <div class="col-12">
+                  <label for="contactCompany" class="form-label text-light">Company / Organization <span class="text-muted">(Optional)</span></label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="contactCompany" 
+                    name="company" 
+                    placeholder="e.g. Global Tech Solutions" 
+                    maxlength="100" 
+                    value="<%= formData.company || '' %>"
+                  >
+                </div>
+
+                <div class="col-12">
+                  <label for="contactMessage" class="form-label text-light">Your Message *</label>
+                  <textarea 
+                    class="form-control" 
+                    id="contactMessage" 
+                    name="message" 
+                    rows="5" 
+                    maxlength="1000" 
+                    placeholder="Describe your security challenge, upcoming audit deadlines, or specific consulting questions..." 
+                    required
+                  ><%= formData.message || '' %></textarea>
+                  <div class="form-text text-muted">Length: 5 to 1000 characters. Handled strictly confidentially.</div>
+                </div>
+
+                <div class="col-12 pt-2">
+                  <button type="submit" class="btn btn-teal-glow w-100 py-3" id="contactSubmitBtn">
+                    <i class="bi bi-send-fill me-2"></i> Send Confidential Message
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <div class="border-top border-secondary-subtle pt-4 mt-2">
+              <div class="row g-3 text-muted small">
+                <div class="col-md-6">
+                  <i class="bi bi-geo-alt text-teal me-2"></i><strong>Location:</strong> Dubai, UAE · Remote Worldwide
+                </div>
+                <div class="col-md-6">
+                  <i class="bi bi-envelope text-teal me-2"></i><strong>Email:</strong> <a href="mailto:<%= email %>" class="text-teal text-decoration-none"><%= email %></a>
+                </div>
+                <div class="col-md-6">
+                  <i class="bi bi-clock text-teal me-2"></i><strong>Hours:</strong> Mon–Fri 9am–6pm GST
+                </div>
+                <div class="col-md-6">
+                  <i class="bi bi-calendar2-check text-teal me-2"></i>Prefer a call? <a href="/booking" class="text-teal fw-semibold">Book 30-min discovery session</a>
+                </div>
+              </div>
+            </div>
+
+          <% } %>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

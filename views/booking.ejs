@@ -1,0 +1,630 @@
+<%- include('partials/header') %>
+
+<main class="py-5">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-9 col-xl-8">
+
+        <% if (confirmed && summary) { %>
+          <!-- Booking Confirmed View -->
+          <div class="booking-card p-4 p-md-5 text-center" id="bookingConfirmedCard">
+            <div class="success-icon-badge mb-3">
+              <i class="bi bi-calendar-check-fill"></i>
+            </div>
+            <div class="section-tag mb-2">
+              <i class="bi bi-patch-check-fill"></i> Session Scheduled
+            </div>
+            <h1 class="h2 mb-2">Discovery Call Confirmed!</h1>
+            <p class="text-muted mb-4">
+              Thank you, <strong><%= summary.name %></strong>. Your free 30-minute security discovery session request has been registered.
+            </p>
+
+            <div class="summary-details-box text-start p-4 mb-4">
+              <h5 class="text-teal mb-3 font-mono border-bottom border-secondary-subtle pb-2">
+                <i class="bi bi-file-earmark-text me-2"></i>Engagement Summary
+              </h5>
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <div class="summary-label">Booking Reference &amp; Status</div>
+                  <div class="summary-val text-white">
+                    <span class="font-mono text-teal fw-bold">#<%= summary.id || 'N/A' %></span> &middot; 
+                    <span class="badge bg-success-subtle text-success border border-success"><%= summary.status || 'Booked' %></span>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="summary-label">Selected Service</div>
+                  <div class="summary-val text-white"><%= summary.service %></div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="summary-label">Date &amp; Time Slot</div>
+                  <div class="summary-val text-teal">
+                    <%= summary.date %> at <%= summary.timeSlot %>
+                  </div>
+                  <div class="small text-muted font-mono"><%= summary.timeZone %></div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="summary-label">Name &amp; Organization</div>
+                  <div class="summary-val text-white">
+                    <%= summary.name %> <%= summary.company ? '· ' + summary.company : '' %>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="summary-label">Contact Details</div>
+                  <div class="summary-val text-white">
+                    <%= summary.email %><br><%= summary.phone %>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="summary-label">Scope &amp; Requirements</div>
+                  <div class="summary-val text-light fst-italic">
+                    &ldquo;<%= summary.message %>&rdquo;
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info bg-navy-subtle border-teal text-start mb-4 py-3" role="alert">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-info-circle-fill text-teal fs-5"></i>
+                <strong class="text-teal">What happens next?</strong>
+              </div>
+              <p class="small text-muted mb-0">
+                Your session has been recorded in our booking calendar. Usman Naeem will review your scope and send a Google Meet invite and confirmation to <strong><%= summary.email %></strong>.
+              </p>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+              <a href="/" class="btn btn-teal-glow px-4 py-2">
+                <i class="bi bi-house-door me-1"></i> Return to Home
+              </a>
+              <a href="/booking" class="btn btn-outline-teal px-4 py-2">
+                <i class="bi bi-arrow-repeat me-1"></i> Book Another Slot
+              </a>
+            </div>
+          </div>
+
+        <% } else { %>
+
+          <!-- Booking Stepper Wizard Form -->
+          <div class="booking-card p-4 p-md-5">
+            <div class="text-center mb-4">
+              <div class="section-tag mb-2">
+                <i class="bi bi-calendar-event"></i> Free 30-Minute Consultation
+              </div>
+              <h1 class="h2 mb-2">Book a Discovery Call</h1>
+              <p class="text-muted small">
+                Evaluate your security posture with an independent offensive consultant. No sales pitches — purely pragmatic technical clarity.
+              </p>
+            </div>
+
+            <!-- Server Errors Alert -->
+            <% if (errors && errors.length > 0) { %>
+              <div class="alert alert-danger d-flex align-items-start gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
+                <div>
+                  <strong>Please correct the following:</strong>
+                  <ul class="mb-0 mt-1 ps-3">
+                    <% errors.forEach(err => { %>
+                      <li><%= err %></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </div>
+            <% } %>
+
+            <!-- Wizard Step Navigation Indicators -->
+            <div class="wizard-stepper mb-5">
+              <div class="stepper-step active" id="step-indicator-1">
+                <span class="step-num">1</span>
+                <span class="step-text">Service</span>
+              </div>
+              <div class="stepper-line" id="line-1"></div>
+              <div class="stepper-step" id="step-indicator-2">
+                <span class="step-num">2</span>
+                <span class="step-text">Date &amp; Time</span>
+              </div>
+              <div class="stepper-line" id="line-2"></div>
+              <div class="stepper-step" id="step-indicator-3">
+                <span class="step-num">3</span>
+                <span class="step-text">Your Details</span>
+              </div>
+              <div class="stepper-line" id="line-3"></div>
+              <div class="stepper-step" id="step-indicator-4">
+                <span class="step-num">4</span>
+                <span class="step-text">Confirm</span>
+              </div>
+            </div>
+
+            <!-- Main Booking Form -->
+            <form action="/booking" method="POST" id="bookingWizardForm" novalidate>
+
+              <!-- STEP 1: CHOOSE A SERVICE -->
+              <div class="wizard-step-content" id="wizardStep1">
+                <h3 class="h5 mb-2">Step 1: Choose a Service</h3>
+                <p class="text-muted small mb-4">Select the primary domain you wish to discuss during the call.</p>
+
+                <div class="service-selection-grid mb-4">
+                  <label class="service-select-card <%= formData.service === 'Vulnerability Assessment' ? 'selected' : '' %>">
+                    <input type="radio" name="service" value="Vulnerability Assessment" class="d-none" <%= formData.service === 'Vulnerability Assessment' ? 'checked' : '' %> required>
+                    <div class="card-icon"><i class="bi bi-shield-check"></i></div>
+                    <div class="card-content">
+                      <div class="fw-bold">Vulnerability Assessment</div>
+                      <div class="text-muted small">Network, endpoint &amp; cloud perimeter scanning.</div>
+                    </div>
+                  </label>
+
+                  <label class="service-select-card <%= formData.service === 'Penetration Testing' ? 'selected' : '' %>">
+                    <input type="radio" name="service" value="Penetration Testing" class="d-none" <%= formData.service === 'Penetration Testing' ? 'checked' : '' %>>
+                    <div class="card-icon"><i class="bi bi-crosshair"></i></div>
+                    <div class="card-content">
+                      <div class="fw-bold">Penetration Testing</div>
+                      <div class="text-muted small">Adversary simulation against web apps &amp; APIs.</div>
+                    </div>
+                  </label>
+
+                  <label class="service-select-card <%= formData.service === 'Security Awareness Training' ? 'selected' : '' %>">
+                    <input type="radio" name="service" value="Security Awareness Training" class="d-none" <%= formData.service === 'Security Awareness Training' ? 'checked' : '' %>>
+                    <div class="card-icon"><i class="bi bi-people"></i></div>
+                    <div class="card-content">
+                      <div class="fw-bold">Security Awareness Training</div>
+                      <div class="text-muted small">Employee phishing simulations &amp; live workshops.</div>
+                    </div>
+                  </label>
+
+                  <label class="service-select-card <%= formData.service === 'Compliance & Policy Review (ISO 27001)' ? 'selected' : '' %>">
+                    <input type="radio" name="service" value="Compliance & Policy Review (ISO 27001)" class="d-none" <%= formData.service === 'Compliance & Policy Review (ISO 27001)' ? 'checked' : '' %>>
+                    <div class="card-icon"><i class="bi bi-clipboard2-check"></i></div>
+                    <div class="card-content">
+                      <div class="fw-bold">Compliance &amp; Policy Review (ISO 27001)</div>
+                      <div class="text-muted small">Gap assessments &amp; security policy readiness.</div>
+                    </div>
+                  </label>
+
+                  <label class="service-select-card <%= formData.service === 'Not sure yet' ? 'selected' : '' %>">
+                    <input type="radio" name="service" value="Not sure yet" class="d-none" <%= formData.service === 'Not sure yet' ? 'checked' : '' %>>
+                    <div class="card-icon"><i class="bi bi-question-circle"></i></div>
+                    <div class="card-content">
+                      <div class="fw-bold">Not sure yet</div>
+                      <div class="text-muted small">General technical scoping &amp; roadmap discussion.</div>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="text-danger small mb-3 d-none" id="step1Error">Please choose a service option to proceed.</div>
+
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-teal-glow px-4 py-2" id="toStep2Btn">
+                    Next: Choose Date &amp; Time <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 2: CHOOSE A DATE & TIME SLOT -->
+              <div class="wizard-step-content d-none" id="wizardStep2">
+                <h3 class="h5 mb-2">Step 2: Choose a Date &amp; Time Slot</h3>
+                <p class="text-muted small mb-3">
+                  Available <strong class="text-light">Monday through Friday</strong> only &middot; Time Zone: <span class="badge bg-navy-subtle text-teal border border-teal font-mono">Asia/Dubai (GST, UTC+4)</span>
+                </p>
+
+                <!-- Date Picker -->
+                <div class="mb-4">
+                  <label for="bookingDate" class="form-label text-light fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-event text-teal"></i> Select Date (Mon–Fri only) *
+                  </label>
+                  <div class="input-group custom-date-group">
+                    <button type="button" class="btn btn-outline-teal px-3" id="calendarAddonBtn" title="Click to open calendar">
+                      <i class="bi bi-calendar3 fs-5"></i>
+                    </button>
+                    <input 
+                      type="date" 
+                      id="bookingDate" 
+                      name="date" 
+                      class="form-control custom-date-input" 
+                      min="<%= minDate %>" 
+                      value="<%= formData.date %>"
+                      required
+                    >
+                    <button type="button" class="btn btn-teal-glow px-3" id="calendarPickBtn" title="Open Calendar Picker">
+                      <i class="bi bi-calendar-check me-1"></i> Open Calendar
+                    </button>
+                  </div>
+                  <div class="form-text text-muted mt-2">
+                    <i class="bi bi-info-circle text-teal me-1"></i> Click the calendar icon or button to open the date picker. Weekdays only (Monday to Friday).
+                  </div>
+                </div>
+
+                <!-- Time Slot Picker -->
+                <div class="mb-4">
+                  <label class="form-label text-light fw-semibold">Select 30-Minute Time Slot (10:00 AM – 5:00 PM GST) *</label>
+                  <input type="hidden" name="timeSlot" id="selectedTimeSlotInput" value="<%= formData.timeSlot %>" required>
+                  
+                  <div class="time-slots-grid" id="timeSlotsGrid">
+                    <% timeSlots.forEach(slot => { %>
+                      <button 
+                        type="button" 
+                        class="time-slot-btn <%= formData.timeSlot === slot ? 'active' : '' %>" 
+                        data-slot="<%= slot %>"
+                      >
+                        <i class="bi bi-clock me-1 text-teal"></i><%= slot %>
+                      </button>
+                    <% }) %>
+                  </div>
+                </div>
+
+                <div class="text-danger small mb-3 d-none" id="step2Error">Please select a valid weekday and time slot.</div>
+
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-teal px-4 py-2" id="backToStep1Btn">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                  </button>
+                  <button type="button" class="btn btn-teal-glow px-4 py-2" id="toStep3Btn">
+                    Next: Your Details <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 3: CONTACT DETAILS -->
+              <div class="wizard-step-content d-none" id="wizardStep3">
+                <h3 class="h5 mb-2">Step 3: Enter Your Details</h3>
+                <p class="text-muted small mb-4">Provide your direct details for meeting coordination and calendar invitations.</p>
+
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label for="bookerName" class="form-label text-light">Full Name *</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      id="bookerName" 
+                      name="name" 
+                      placeholder="e.g. Alex Morgan" 
+                      maxlength="100" 
+                      value="<%= formData.name %>" 
+                      required
+                    >
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="bookerCompany" class="form-label text-light">Company / Organization <span class="text-muted">(Optional)</span></label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      id="bookerCompany" 
+                      name="company" 
+                      placeholder="e.g. Acme Corp" 
+                      maxlength="100" 
+                      value="<%= formData.company %>"
+                    >
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="bookerEmail" class="form-label text-light">Work Email *</label>
+                    <input 
+                      type="email" 
+                      class="form-control" 
+                      id="bookerEmail" 
+                      name="email" 
+                      placeholder="alex@acmecorp.com" 
+                      maxlength="100" 
+                      value="<%= formData.email %>" 
+                      required
+                    >
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="bookerPhone" class="form-label text-light">Phone / WhatsApp *</label>
+                    <input 
+                      type="tel" 
+                      class="form-control" 
+                      id="bookerPhone" 
+                      name="phone" 
+                      placeholder="+971 50 123 4567" 
+                      maxlength="30" 
+                      value="<%= formData.phone %>" 
+                      required
+                    >
+                  </div>
+
+                  <div class="col-12">
+                    <label for="bookerMessage" class="form-label text-light">Briefly describe what you need *</label>
+                    <textarea 
+                      class="form-control" 
+                      id="bookerMessage" 
+                      name="message" 
+                      rows="3" 
+                      maxlength="1000" 
+                      placeholder="e.g. Upcoming security audit, external web app penetration testing needed, or ISO 27001 readiness review..." 
+                      required
+                    ><%= formData.message %></textarea>
+                    <div class="form-text text-muted">Max 1000 characters. Handled strictly under non-disclosure terms.</div>
+                  </div>
+                </div>
+
+                <div class="text-danger small mb-3 d-none" id="step3Error">Please complete all required fields with valid details.</div>
+
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-teal px-4 py-2" id="backToStep2Btn">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                  </button>
+                  <button type="button" class="btn btn-teal-glow px-4 py-2" id="toStep4Btn">
+                    Review Summary <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 4: SUMMARY & CONFIRMATION -->
+              <div class="wizard-step-content d-none" id="wizardStep4">
+                <h3 class="h5 mb-2">Step 4: Review &amp; Confirm Booking</h3>
+                <p class="text-muted small mb-4">Please review your discovery session specifications before submitting.</p>
+
+                <div class="summary-details-box p-4 mb-4">
+                  <h6 class="text-teal font-mono text-uppercase mb-3 pb-2 border-bottom border-secondary-subtle">
+                    <i class="bi bi-card-checklist me-1"></i> Call Specifications
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="summary-label">Target Service</div>
+                      <div class="summary-val text-white fw-semibold" id="sumService">—</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="summary-label">Scheduled Date &amp; Time (Asia/Dubai)</div>
+                      <div class="summary-val text-teal fw-semibold" id="sumDateTime">—</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="summary-label">Name &amp; Company</div>
+                      <div class="summary-val text-white" id="sumNameCompany">—</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="summary-label">Email &amp; Phone</div>
+                      <div class="summary-val text-white" id="sumContact">—</div>
+                    </div>
+                    <div class="col-12">
+                      <div class="summary-label">Project Objectives</div>
+                      <div class="summary-val text-muted fst-italic" id="sumMessage">—</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="alert alert-dark bg-navy-subtle border-secondary mb-4 py-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-check text-teal fs-5"></i>
+                    <div class="small text-muted">
+                      No commitment required. Free 30-minute introductory discovery session. Nothing is saved to a database yet.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-teal px-4 py-2" id="backToStep3Btn">
+                    <i class="bi bi-arrow-left me-1"></i> Edit Details
+                  </button>
+                  <button type="submit" class="btn btn-teal-glow px-4 py-2" id="confirmBookingBtn">
+                    <i class="bi bi-check2-circle me-1"></i> Confirm Booking
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          </div>
+
+        <% } %>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Wizard Interactive Logic -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Elements
+    const step1 = document.getElementById('wizardStep1');
+    const step2 = document.getElementById('wizardStep2');
+    const step3 = document.getElementById('wizardStep3');
+    const step4 = document.getElementById('wizardStep4');
+
+    const ind1 = document.getElementById('step-indicator-1');
+    const ind2 = document.getElementById('step-indicator-2');
+    const ind3 = document.getElementById('step-indicator-3');
+    const ind4 = document.getElementById('step-indicator-4');
+
+    const line1 = document.getElementById('line-1');
+    const line2 = document.getElementById('line-2');
+    const line3 = document.getElementById('line-3');
+
+    // Service card selection
+    const serviceCards = document.querySelectorAll('.service-select-card');
+    serviceCards.forEach(card => {
+      card.addEventListener('click', () => {
+        serviceCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+      });
+    });
+
+    // Time slot button selection
+    const timeSlotBtns = document.querySelectorAll('.time-slot-btn');
+    const timeSlotInput = document.getElementById('selectedTimeSlotInput');
+    timeSlotBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        timeSlotBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (timeSlotInput) {
+          timeSlotInput.value = btn.getAttribute('data-slot');
+        }
+      });
+    });
+
+    // Date picker weekend blocker & calendar triggers
+    const dateInput = document.getElementById('bookingDate');
+    const openCalendarPicker = () => {
+      if (dateInput) {
+        if (typeof dateInput.showPicker === 'function') {
+          dateInput.showPicker();
+        } else {
+          dateInput.focus();
+        }
+      }
+    };
+
+    document.getElementById('calendarAddonBtn')?.addEventListener('click', openCalendarPicker);
+    document.getElementById('calendarPickBtn')?.addEventListener('click', openCalendarPicker);
+    dateInput?.addEventListener('click', () => {
+      if (typeof dateInput.showPicker === 'function') {
+        dateInput.showPicker();
+      }
+    });
+
+    async function refreshBookedSlots() {
+      if (!dateInput || !dateInput.value) return;
+      try {
+        const res = await fetch(`/booking/booked-slots?date=${encodeURIComponent(dateInput.value)}`);
+        const data = await res.json();
+        const booked = data.bookedSlots || [];
+        timeSlotBtns.forEach(btn => {
+          const slot = btn.getAttribute('data-slot');
+          if (booked.includes(slot)) {
+            btn.disabled = true;
+            btn.classList.add('disabled', 'opacity-50');
+            btn.title = 'This slot has already been booked';
+            if (btn.classList.contains('active')) {
+              btn.classList.remove('active');
+              if (timeSlotInput) timeSlotInput.value = '';
+            }
+          } else {
+            btn.disabled = false;
+            btn.classList.remove('disabled', 'opacity-50');
+            btn.title = '';
+          }
+        });
+      } catch (err) {
+        console.warn('Could not check booked slots:', err);
+      }
+    }
+
+    if (dateInput) {
+      dateInput.addEventListener('change', () => {
+        if (!dateInput.value) return;
+        const selected = new Date(dateInput.value + 'T12:00:00');
+        const day = selected.getDay();
+        if (day === 0 || day === 6) {
+          alert('Discovery calls are available Monday to Friday only. Please select a weekday.');
+          dateInput.value = '';
+          return;
+        }
+        refreshBookedSlots();
+      });
+    }
+
+    // Navigation functions
+    function goToStep(target) {
+      [step1, step2, step3, step4].forEach(s => s && s.classList.add('d-none'));
+      [ind1, ind2, ind3, ind4].forEach(i => i && i.classList.remove('active', 'completed'));
+      [line1, line2, line3].forEach(l => l && l.classList.remove('completed'));
+
+      if (target === 1) {
+        step1.classList.remove('d-none');
+        ind1.classList.add('active');
+      } else if (target === 2) {
+        step2.classList.remove('d-none');
+        ind1.classList.add('completed');
+        line1.classList.add('completed');
+        ind2.classList.add('active');
+      } else if (target === 3) {
+        step3.classList.remove('d-none');
+        ind1.classList.add('completed');
+        ind2.classList.add('completed');
+        line1.classList.add('completed');
+        line2.classList.add('completed');
+        ind3.classList.add('active');
+      } else if (target === 4) {
+        step4.classList.remove('d-none');
+        ind1.classList.add('completed');
+        ind2.classList.add('completed');
+        ind3.classList.add('completed');
+        line1.classList.add('completed');
+        line2.classList.add('completed');
+        line3.classList.add('completed');
+        ind4.classList.add('active');
+        updateSummary();
+      }
+      window.scrollTo({ top: 100, behavior: 'smooth' });
+    }
+
+    // Step 1 -> Step 2
+    const toStep2Btn = document.getElementById('toStep2Btn');
+    const step1Error = document.getElementById('step1Error');
+    if (toStep2Btn) {
+      toStep2Btn.addEventListener('click', () => {
+        const checkedService = document.querySelector('input[name="service"]:checked');
+        if (!checkedService) {
+          step1Error.classList.remove('d-none');
+          return;
+        }
+        step1Error.classList.add('d-none');
+        goToStep(2);
+      });
+    }
+
+    // Step 2 -> Step 3
+    const toStep3Btn = document.getElementById('toStep3Btn');
+    const step2Error = document.getElementById('step2Error');
+    if (toStep3Btn) {
+      toStep3Btn.addEventListener('click', () => {
+        const dateVal = dateInput ? dateInput.value : '';
+        const timeVal = timeSlotInput ? timeSlotInput.value : '';
+        if (!dateVal || !timeVal) {
+          step2Error.classList.remove('d-none');
+          return;
+        }
+        step2Error.classList.add('d-none');
+        goToStep(3);
+      });
+    }
+
+    // Step 3 -> Step 4
+    const toStep4Btn = document.getElementById('toStep4Btn');
+    const step3Error = document.getElementById('step3Error');
+    if (toStep4Btn) {
+      toStep4Btn.addEventListener('click', () => {
+        const name = document.getElementById('bookerName')?.value.trim();
+        const email = document.getElementById('bookerEmail')?.value.trim();
+        const phone = document.getElementById('bookerPhone')?.value.trim();
+        const msg = document.getElementById('bookerMessage')?.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!name || name.length < 2 || !email || !emailRegex.test(email) || !phone || phone.length < 7 || !msg || msg.length < 5) {
+          step3Error.classList.remove('d-none');
+          return;
+        }
+        step3Error.classList.add('d-none');
+        goToStep(4);
+      });
+    }
+
+    // Back buttons
+    document.getElementById('backToStep1Btn')?.addEventListener('click', () => goToStep(1));
+    document.getElementById('backToStep2Btn')?.addEventListener('click', () => goToStep(2));
+    document.getElementById('backToStep3Btn')?.addEventListener('click', () => goToStep(3));
+
+    // Summary update helper
+    function updateSummary() {
+      const checkedService = document.querySelector('input[name="service"]:checked')?.value || '—';
+      const date = document.getElementById('bookingDate')?.value || '—';
+      const slot = document.getElementById('selectedTimeSlotInput')?.value || '—';
+      const name = document.getElementById('bookerName')?.value || '—';
+      const company = document.getElementById('bookerCompany')?.value || '';
+      const email = document.getElementById('bookerEmail')?.value || '—';
+      const phone = document.getElementById('bookerPhone')?.value || '—';
+      const msg = document.getElementById('bookerMessage')?.value || '—';
+
+      document.getElementById('sumService').textContent = checkedService;
+      document.getElementById('sumDateTime').textContent = `${date} at ${slot} (GST)`;
+      document.getElementById('sumNameCompany').textContent = company ? `${name} (${company})` : name;
+      document.getElementById('sumContact').textContent = `${email} · ${phone}`;
+      document.getElementById('sumMessage').textContent = msg;
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

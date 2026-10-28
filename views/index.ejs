@@ -1,0 +1,554 @@
+<%- include('partials/header') %>
+
+<main>
+  <!-- Hero Section -->
+  <section class="hero-section" id="home">
+    <div class="hero-glow-orb"></div>
+    <div class="container position-relative">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+          <div class="section-tag mb-3">
+            <span class="stats-dot"></span> Available for New Security Engagements
+          </div>
+          <h1 class="hero-title">
+            <%= brandName || 'Usman Naeem Cyber Security Consulting' %>
+          </h1>
+          <div class="hero-tagline">
+            // <%= tagline || 'Find the gaps before attackers do' %>
+          </div>
+          <p class="hero-desc">
+            Independent cyber security consultant based in Dubai, delivering bespoke penetration testing, vulnerability assessments, and ISO 27001 compliance reviews for forward-thinking organizations worldwide.
+          </p>
+          <div class="hero-cta-group d-flex flex-wrap gap-3 align-items-center mb-4">
+            <a href="/booking" class="btn btn-teal-glow btn-lg px-4 py-3 w-100 w-sm-auto hero-btn-discovery" id="heroDiscoveryBtn">
+              <i class="bi bi-calendar-event me-2"></i> Book a free discovery call
+            </a>
+            <a href="#services" class="btn btn-outline-teal btn-lg px-4 py-3 w-100 w-sm-auto hero-btn-services" id="heroServicesBtn">
+              <i class="bi bi-shield-shaded me-2"></i> Explore Services
+            </a>
+          </div>
+
+          <div class="hero-stats-badge">
+            <i class="bi bi-geo-alt-fill text-teal fs-5"></i>
+            <div>
+              <div class="small text-muted font-mono">Location & Coverage</div>
+              <div class="fw-semibold">Dubai, UAE &middot; Remote Worldwide</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <!-- Interactive Terminal / Lab Card -->
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="terminal-title">sec-auditor@dubai-lab:~</div>
+            </div>
+            <div class="terminal-body font-mono">
+              <div class="terminal-line">
+                <span class="prompt-prefix">$</span> jcsc --scan --target perimeter
+              </div>
+              <div class="terminal-line text-muted">
+                [*] Initializing security discovery protocol...
+              </div>
+              <div class="terminal-line text-muted">
+                [+] Mapping external attack surface
+              </div>
+              <div class="terminal-line text-teal">
+                [✓] Active services discovered: 14 endpoints
+              </div>
+              <div class="terminal-line text-muted">
+                [*] Testing OWASP Top 10 vulnerabilities...
+              </div>
+              <div class="terminal-line text-warning">
+                [!] Identified 2 high-severity misconfigurations
+              </div>
+              <div class="terminal-line text-teal">
+                [✓] Remediation roadmap generated: Ready for fix
+              </div>
+              <div class="terminal-line pt-2">
+                <span class="prompt-prefix">$</span> <span class="text-cyan">status:</span> <span class="badge bg-success-subtle text-success border border-success-subtle">Ready to assist</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="section-padding" id="services">
+    <div class="container">
+      <div class="text-center mx-auto mb-5">
+        <div class="section-tag">
+          <i class="bi bi-hdd-network"></i> Core Capabilities
+        </div>
+        <h2 class="section-title">Security Services</h2>
+        <p class="section-subtitle mx-auto">
+          Tailored security solutions crafted for businesses needing pragmatic, high-impact defense without corporate red tape.
+        </p>
+      </div>
+
+      <div class="row g-4 align-items-stretch">
+        <!-- Service 1: Vulnerability Assessment -->
+        <div class="col-md-6 col-lg-3 d-flex">
+          <div class="service-card h-100 w-100 d-flex flex-column" id="service-va">
+            <div class="service-icon-box">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h3 class="service-title">Vulnerability Assessment</h3>
+            <p class="service-desc flex-grow-1">
+              Comprehensive automated scanning and expert manual verification to uncover exploitable flaws across networks, systems, and cloud assets.
+            </p>
+          </div>
+        </div>
+
+        <!-- Service 2: Penetration Testing -->
+        <div class="col-md-6 col-lg-3 d-flex">
+          <div class="service-card h-100 w-100 d-flex flex-column" id="service-pentest">
+            <div class="service-icon-box">
+              <i class="bi bi-crosshair"></i>
+            </div>
+            <h3 class="service-title">Penetration Testing</h3>
+            <p class="service-desc flex-grow-1">
+              Simulated real-world adversary cyber attacks against web applications, APIs, and infrastructure to expose defense breakdowns before criminals strike.
+            </p>
+          </div>
+        </div>
+
+        <!-- Service 3: Security Awareness Training -->
+        <div class="col-md-6 col-lg-3 d-flex">
+          <div class="service-card h-100 w-100 d-flex flex-column" id="service-training">
+            <div class="service-icon-box">
+              <i class="bi bi-people"></i>
+            </div>
+            <h3 class="service-title">Security Awareness Training</h3>
+            <p class="service-desc flex-grow-1">
+              Tailored employee workshops and realistic phishing simulations that transform your staff into an active human detection firewall.
+            </p>
+          </div>
+        </div>
+
+        <!-- Service 4: Compliance & Policy Review (ISO 27001) -->
+        <div class="col-md-6 col-lg-3 d-flex">
+          <div class="service-card h-100 w-100 d-flex flex-column" id="service-compliance">
+            <div class="service-icon-box">
+              <i class="bi bi-clipboard2-check"></i>
+            </div>
+            <h3 class="service-title">Compliance &amp; Policy Review (ISO 27001)</h3>
+            <p class="service-desc flex-grow-1">
+              Actionable gap assessments, documentation audits, and readiness frameworks aligned to ISO/IEC 27001 standards and UAE regional compliance.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How I Work Section -->
+  <section class="section-padding bg-navy-alt" id="how-i-work">
+    <div class="container">
+      <div class="text-center mx-auto mb-5">
+        <div class="section-tag">
+          <i class="bi bi-diagram-3"></i> Proven Methodology
+        </div>
+        <h2 class="section-title">How I Work</h2>
+        <p class="section-subtitle mx-auto">
+          A disciplined, four-phase engagement cycle guaranteeing clarity, minimal operational disruption, and verified outcomes.
+        </p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Step 1: Scope -->
+        <div class="col-md-6 col-lg-3">
+          <div class="step-card" id="step-scope">
+            <span class="step-badge">Phase 01</span>
+            <h3 class="step-title">Scope</h3>
+            <p class="step-desc">
+              Collaborative definition of engagement boundaries, critical assets, rules of engagement, and schedules to safeguard production uptime.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2: Assess -->
+        <div class="col-md-6 col-lg-3">
+          <div class="step-card" id="step-assess">
+            <span class="step-badge">Phase 02</span>
+            <h3 class="step-title">Assess</h3>
+            <p class="step-desc">
+              In-depth technical execution combining OSINT, automated reconnaissance, and manual exploitation techniques to uncover stealth vulnerabilities.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3: Report -->
+        <div class="col-md-6 col-lg-3">
+          <div class="step-card" id="step-report">
+            <span class="step-badge">Phase 03</span>
+            <h3 class="step-title">Report</h3>
+            <p class="step-desc">
+              Clear executive summary for leadership paired with deep-dive technical findings, CVSS scores, proof-of-concept steps, and prioritized remedies.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4: Fix and retest -->
+        <div class="col-md-6 col-lg-3">
+          <div class="step-card" id="step-retest">
+            <span class="step-badge">Phase 04</span>
+            <h3 class="step-title">Fix and retest</h3>
+            <p class="step-desc">
+              Collaborative developer remediation guidance followed by rigorous retesting to validate that every identified gap is permanently resolved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Me Section -->
+  <section class="section-padding" id="about">
+    <div class="container">
+      <div class="about-box">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-4 text-center">
+            <div class="about-avatar-wrapper">
+              <div class="about-avatar">
+                <i class="bi bi-person-fill-lock"></i>
+              </div>
+              <div class="about-lab-pill">
+                <i class="bi bi-cpu me-1"></i> LAB ACTIVE
+              </div>
+            </div>
+            <h3 class="h4 mb-1"><%= consultantName || 'Usman Naeem' %></h3>
+            <p class="text-teal font-mono small mb-0">Independent Cyber Security Consultant</p>
+            <p class="text-muted small">Based in Dubai, UAE</p>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="section-tag mb-2">
+              <i class="bi bi-person-badge"></i> About Consultant
+            </div>
+            <h2 class="section-title mb-3">Independent Security Engineering with a Builder&rsquo;s Mindset</h2>
+            <p class="lead text-light mb-3">
+              I am an independent cyber security consultant based in Dubai, UAE, dedicated to offensive security assessments, proactive vulnerability discovery, and cloud defense architecture.
+            </p>
+            <p class="text-muted mb-3">
+              Operating a dedicated private security research lab, I regularly reverse-engineer emerging exploits, simulate real-world threat actors, and test defensive tooling against zero-day tactics. My consulting focus is straightforward: eliminate blind spots in your attack surface and deliver crystal-clear, zero-fluff remediation steps that engineering teams can immediately execute.
+            </p>
+
+            <ul class="about-highlights-list">
+              <li>
+                <i class="bi bi-check-circle-fill"></i>
+                <span><strong>Direct Access:</strong> Work directly with the senior specialist conducting the assessments — no account manager middlemen.</span>
+              </li>
+              <li>
+                <i class="bi bi-check-circle-fill"></i>
+                <span><strong>Lab-Tested Tactics:</strong> Methodologies validated continuously across synthetic virtual infrastructures and real-world scenarios.</span>
+              </li>
+              <li>
+                <i class="bi bi-check-circle-fill"></i>
+                <span><strong>Pragmatic Guidance:</strong> Remediation recommendations tailored to your tech stack, business budget, and delivery velocity.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Credentials Section -->
+  <section class="section-padding bg-navy-alt" id="credentials">
+    <div class="container">
+      <div class="text-center mx-auto mb-5">
+        <div class="section-tag">
+          <i class="bi bi-patch-check"></i> Certifications &amp; Training
+        </div>
+        <h2 class="section-title">Credentials &amp; Validations</h2>
+        <p class="section-subtitle mx-auto">
+          Continuous professional development and industry-standard certifications ensuring battle-tested security competencies.
+        </p>
+      </div>
+
+      <div class="row g-4 justify-content-center">
+        <!-- Credential 1: CompTIA Security+ -->
+        <div class="col-md-6 col-lg-3">
+          <div class="credential-card">
+            <div class="credential-icon">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div>
+              <div class="credential-name">CompTIA Security+</div>
+              <div class="text-muted small mb-1">CompTIA Certified</div>
+              <span class="credential-status status-active">
+                <i class="bi bi-check2-circle me-1"></i> Active / Verified
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credential 2: CEH -->
+        <div class="col-md-6 col-lg-3">
+          <div class="credential-card">
+            <div class="credential-icon">
+              <i class="bi bi-bug-fill"></i>
+            </div>
+            <div>
+              <div class="credential-name">CEH (Certified Ethical Hacker)</div>
+              <div class="text-muted small mb-1">EC-Council</div>
+              <span class="credential-status status-active">
+                <i class="bi bi-check2-circle me-1"></i> Active / Verified
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credential 3: eJPT -->
+        <div class="col-md-6 col-lg-3">
+          <div class="credential-card">
+            <div class="credential-icon">
+              <i class="bi bi-terminal"></i>
+            </div>
+            <div>
+              <div class="credential-name">eJPT (Junior Penetration Tester)</div>
+              <div class="text-muted small mb-1">INE Security</div>
+              <span class="credential-status status-active">
+                <i class="bi bi-check2-circle me-1"></i> Active / Verified
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credential 4: In Progress (CISSP) -->
+        <div class="col-md-6 col-lg-3">
+          <div class="credential-card">
+            <div class="credential-icon">
+              <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+              <div class="credential-name">CISSP Certification</div>
+              <div class="text-muted small mb-1">(ISC)² Candidate</div>
+              <span class="credential-status status-progress">
+                <i class="bi bi-arrow-repeat me-1"></i> In Progress
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section-padding" id="contact">
+    <div class="container">
+      <div class="text-center mx-auto mb-5">
+        <div class="section-tag">
+          <i class="bi bi-chat-right-text"></i> Start a Conversation
+        </div>
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="section-subtitle mx-auto">
+          Book a free 30-minute discovery call to evaluate your current exposure, review your security requirements, and discuss customized consulting options.
+        </p>
+      </div>
+
+      <div class="row g-4 align-items-stretch">
+        <!-- Contact Information Block -->
+        <div class="col-lg-5">
+          <div class="contact-info-card">
+            <h3 class="h4 mb-4">Direct Contact Information</h3>
+
+            <!-- Email -->
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">
+                <i class="bi bi-envelope-fill"></i>
+              </div>
+              <div>
+                <div class="contact-label">Email Address</div>
+                <a href="mailto:<%= email || 'usman@usmancybersecurity.com' %>" class="contact-val">
+                  <%= email || 'usman@usmancybersecurity.com' %>
+                </a>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">
+                <i class="bi bi-telephone-fill"></i>
+              </div>
+              <div>
+                <div class="contact-label">Phone &amp; WhatsApp</div>
+                <a href="tel:<%= (phone || '+971 4 234 5678').replace(/\s+/g, '') %>" class="contact-val">
+                  <%= phone || '+971 4 234 5678' %>
+                </a>
+              </div>
+            </div>
+
+            <!-- Location -->
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">
+                <i class="bi bi-geo-alt-fill"></i>
+              </div>
+              <div>
+                <div class="contact-label">Location</div>
+                <div class="contact-val">
+                  <%= location || 'Dubai, UAE · Remote Worldwide' %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Availability -->
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">
+                <i class="bi bi-clock-fill"></i>
+              </div>
+              <div>
+                <div class="contact-label">Availability &amp; Hours</div>
+                <div class="contact-val">
+                  <%= availability || 'Mon–Fri 9am–6pm GST' %>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-secondary-subtle">
+              <div class="d-flex align-items-center gap-2 text-teal small font-mono">
+                <i class="bi bi-shield-lock"></i> PGP Encrypted Comms Available Upon Request
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Discovery Call & Contact Form Block -->
+        <div class="col-lg-7">
+          <div class="contact-form-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="h4 mb-0">Send a Confidential Message</h3>
+              <a href="/booking" class="btn btn-sm btn-outline-teal d-none d-sm-inline-flex align-items-center">
+                <i class="bi bi-calendar-event me-1"></i> Pick a Time Slot
+              </a>
+            </div>
+            <p class="text-muted small mb-3">
+              Submit your inquiry below or schedule directly via the calendar wizard. All information shared is handled under non-disclosure terms.
+            </p>
+
+            <div class="p-3 mb-3 rounded-3 bg-navy-subtle border border-secondary d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="small text-muted">
+                <i class="bi bi-calendar-check text-teal me-1"></i> Prefer a live discovery call? Select a 30-min weekday slot.
+              </div>
+              <a href="/booking" class="btn btn-teal-glow btn-sm py-1 px-3">
+                Open Booking Calendar &rarr;
+              </a>
+            </div>
+
+            <form id="discoveryForm" action="/contact" method="POST" onsubmit="handleContactSubmit(event)">
+              <!-- Anti-bot Honeypot Field -->
+              <div class="hp-trap" style="display: none !important; visibility: hidden !important;" aria-hidden="true">
+                <label for="hp_idx_website">Leave this field blank</label>
+                <input type="text" name="website" id="hp_idx_website" tabindex="-1" autocomplete="off">
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="clientName" class="form-label">Full Name *</label>
+                  <input type="text" class="form-control" id="clientName" name="name" placeholder="e.g. Alex Morgan" maxlength="100" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="clientEmail" class="form-label">Work Email *</label>
+                  <input type="email" class="form-control" id="clientEmail" name="email" placeholder="e.g. alex@company.com" maxlength="100" required>
+                </div>
+                <div class="col-12">
+                  <label for="clientCompany" class="form-label">Company / Organization <span class="text-muted">(Optional)</span></label>
+                  <input type="text" class="form-control" id="clientCompany" name="company" placeholder="e.g. Acme FinTech" maxlength="100">
+                </div>
+                <div class="col-12">
+                  <label for="clientMessage" class="form-label">Project Scope &amp; Objectives *</label>
+                  <textarea class="form-control" id="clientMessage" name="message" rows="4" maxlength="1000" placeholder="Briefly describe your systems, upcoming security audits, or specific concerns..." required></textarea>
+                </div>
+                <div class="col-12 pt-2">
+                  <button type="submit" class="btn btn-teal-glow w-100 py-3" id="submitInquiryBtn">
+                    <i class="bi bi-send-fill me-2"></i> Send Confidential Inquiry
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <div id="formSuccessAlert" class="alert alert-success mt-3 d-none align-items-center" role="alert">
+              <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+              <div id="successAlertMsg">
+                <strong>Thank you!</strong> Your message has been received. Usman will reach out within 24 business hours.
+              </div>
+            </div>
+
+            <div id="formErrorAlert" class="alert alert-danger mt-3 d-none align-items-start gap-2" role="alert">
+              <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
+              <div id="errorAlertMsg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  async function handleContactSubmit(event) {
+    event.preventDefault();
+    const btn = document.getElementById('submitInquiryBtn');
+    const successBox = document.getElementById('formSuccessAlert');
+    const errorBox = document.getElementById('formErrorAlert');
+    const errorMsg = document.getElementById('errorAlertMsg');
+    const successMsg = document.getElementById('successAlertMsg');
+
+    successBox.classList.add('d-none');
+    errorBox.classList.add('d-none');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending...';
+
+    const payload = {
+      name: document.getElementById('clientName').value,
+      email: document.getElementById('clientEmail').value,
+      company: document.getElementById('clientCompany').value,
+      message: document.getElementById('clientMessage').value,
+      website: document.getElementById('hp_idx_website').value
+    };
+
+    try {
+      const res = await fetch('/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        btn.innerHTML = '<i class="bi bi-check2 me-2"></i> Inquiry Sent Successfully';
+        btn.classList.remove('btn-teal-glow');
+        btn.classList.add('btn-success');
+        successMsg.innerHTML = `<strong>Thank you!</strong> ${data.message || 'Your inquiry has been registered.'}`;
+        successBox.classList.remove('d-none');
+        document.getElementById('discoveryForm').reset();
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send-fill me-2"></i> Send Confidential Inquiry';
+        const errList = data.errors ? data.errors.join('<br>') : 'An unexpected error occurred. Please try again.';
+        errorMsg.innerHTML = `<strong>Error:</strong><br>${errList}`;
+        errorBox.classList.remove('d-none');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-send-fill me-2"></i> Send Confidential Inquiry';
+      errorMsg.innerHTML = '<strong>Network error:</strong> Unable to reach server. Please try again or email us directly.';
+      errorBox.classList.remove('d-none');
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

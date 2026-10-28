@@ -1,0 +1,249 @@
+<%- include('partials/header') %>
+
+<main class="py-5">
+  <div class="container py-4">
+
+    <!-- Admin Dashboard Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary-subtle">
+      <div>
+        <div class="section-tag mb-2">
+          <i class="bi bi-shield-check"></i> Security Operations Center
+        </div>
+        <h1 class="h2 mb-1">Administrative Dashboard</h1>
+        <p class="text-muted small mb-0">
+          Centralized management for client discovery sessions and confidential technical enquiries.
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <div class="user-pill d-flex align-items-center gap-2 px-3 py-2 rounded-3 bg-navy-subtle border border-teal font-mono small">
+          <i class="bi bi-person-check-fill text-teal fs-5"></i>
+          <div>
+            <div class="text-muted" style="font-size: 0.7rem;">AUTHENTICATED AS</div>
+            <strong class="text-light"><%= user.email %></strong>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-outline-danger btn-sm px-3 py-2 d-inline-flex align-items-center" id="adminLogoutBtn">
+          <i class="bi bi-box-arrow-right me-1"></i> Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- Notification Alert -->
+    <% if (notification) { %>
+      <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+        <div><%= notification %></div>
+      </div>
+    <% } %>
+
+    <!-- KPI Statistics -->
+    <div class="row g-3 mb-5">
+      <% 
+        const totalBookings = bookings.length;
+        const activeBookings = bookings.filter(b => b.status === 'Booked').length;
+        const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
+        const totalEnquiries = enquiries.length;
+      %>
+      <div class="col-6 col-lg-3">
+        <div class="stat-kpi-card p-3">
+          <div class="kpi-label">Total Bookings</div>
+          <div class="kpi-value text-white font-mono"><%= totalBookings %></div>
+          <div class="kpi-sub text-muted">All-time appointments</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-kpi-card p-3">
+          <div class="kpi-label">Active / Confirmed</div>
+          <div class="kpi-value text-teal font-mono"><%= activeBookings %></div>
+          <div class="kpi-sub text-muted">Upcoming discovery calls</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-kpi-card p-3">
+          <div class="kpi-label">Cancelled Slots</div>
+          <div class="kpi-value text-warning font-mono"><%= cancelledBookings %></div>
+          <div class="kpi-sub text-muted">Slots released</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-kpi-card p-3">
+          <div class="kpi-label">Client Enquiries</div>
+          <div class="kpi-value text-cyan font-mono"><%= totalEnquiries %></div>
+          <div class="kpi-sub text-muted">Contact form leads</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: UPCOMING BOOKINGS (SOONEST FIRST) -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">
+          <i class="bi bi-calendar3 me-2 text-teal"></i>Upcoming Bookings
+          <span class="badge bg-navy-subtle text-teal border border-teal ms-2 fs-6">Soonest First</span>
+        </h2>
+        <a href="/booking" class="btn btn-sm btn-outline-teal d-none d-sm-inline-flex" target="_blank">
+          <i class="bi bi-plus-circle me-1"></i> Public Booking Page
+        </a>
+      </div>
+
+      <% if (bookings.length === 0) { %>
+        <div class="booking-card p-5 text-center text-muted">
+          <i class="bi bi-calendar-x fs-1 text-dim mb-2 d-block"></i>
+          <h5>No bookings found</h5>
+          <p class="small mb-0">No discovery call requests have been submitted yet.</p>
+        </div>
+      <% } else { %>
+        <div class="booking-card p-0 overflow-hidden shadow">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0 custom-admin-table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 70px;">Ref</th>
+                  <th scope="col" style="width: 220px;">Date &amp; Time (GST)</th>
+                  <th scope="col">Service</th>
+                  <th scope="col">Client Details</th>
+                  <th scope="col">Requirements / Notes</th>
+                  <th scope="col" style="width: 110px;">Status</th>
+                  <th scope="col" style="width: 120px;" class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% bookings.forEach(b => { %>
+                  <tr class="<%= b.status === 'Cancelled' ? 'opacity-50' : '' %>">
+                    <td>
+                      <span class="font-mono text-teal fw-bold">#<%= b.id %></span>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-light">
+                        <i class="bi bi-clock-fill text-teal me-1"></i><%= b.bookingDateTime %>
+                      </div>
+                      <div class="small text-muted font-mono" style="font-size: 0.75rem;">
+                        Recorded: <%= new Date(b.createdAt).toLocaleDateString() %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-white"><%= b.service %></div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-light"><%= b.clientName %></div>
+                      <% if (b.clientCompany) { %>
+                        <div class="small text-muted"><%= b.clientCompany %></div>
+                      <% } %>
+                      <div class="small">
+                        <a href="mailto:<%= b.clientEmail %>" class="text-teal text-decoration-none"><%= b.clientEmail %></a> &middot; 
+                        <span class="text-muted"><%= b.clientPhone %></span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="small text-muted text-truncate-2" title="<%= b.message %>">
+                        <%= b.message || '—' %>
+                      </div>
+                    </td>
+                    <td>
+                      <% if (b.status === 'Booked') { %>
+                        <span class="badge bg-success-subtle text-success border border-success">
+                          <i class="bi bi-check2-circle me-1"></i> Booked
+                        </span>
+                      <% } else if (b.status === 'Cancelled') { %>
+                        <span class="badge bg-danger-subtle text-danger border border-danger">
+                          <i class="bi bi-x-circle me-1"></i> Cancelled
+                        </span>
+                      <% } else { %>
+                        <span class="badge bg-secondary">
+                          <%= b.status %>
+                        </span>
+                      <% } %>
+                    </td>
+                    <td class="text-end">
+                      <% if (b.status === 'Booked') { %>
+                        <form action="/admin/bookings/<%= b.id %>/cancel" method="POST" onsubmit="return confirm('Cancel booking #<%= b.id %> for <%= b.clientName %>? This will free up the time slot.');">
+                          <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="Cancel this booking">
+                            <i class="bi bi-x-lg me-1"></i> Cancel
+                          </button>
+                        </form>
+                      <% } else { %>
+                        <span class="text-muted small fst-italic">Released</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- SECTION 2: ALL ENQUIRIES (NEWEST FIRST) -->
+    <section>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">
+          <i class="bi bi-envelope-paper me-2 text-cyan"></i>All Client Enquiries
+          <span class="badge bg-navy-subtle text-cyan border border-cyan ms-2 fs-6">Newest First</span>
+        </h2>
+      </div>
+
+      <% if (enquiries.length === 0) { %>
+        <div class="booking-card p-5 text-center text-muted">
+          <i class="bi bi-inbox fs-1 text-dim mb-2 d-block"></i>
+          <h5>No enquiries recorded</h5>
+          <p class="small mb-0">All messages submitted via the contact form will appear here.</p>
+        </div>
+      <% } else { %>
+        <div class="booking-card p-0 overflow-hidden shadow">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0 custom-admin-table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 70px;">ID</th>
+                  <th scope="col" style="width: 170px;">Date Received</th>
+                  <th scope="col" style="width: 220px;">Sender &amp; Organization</th>
+                  <th scope="col" style="width: 220px;">Email</th>
+                  <th scope="col">Inquiry Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% enquiries.forEach(e => { %>
+                  <tr>
+                    <td>
+                      <span class="font-mono text-cyan fw-bold">#<%= e.id %></span>
+                    </td>
+                    <td>
+                      <div class="small font-mono text-light">
+                        <%= new Date(e.createdAt).toLocaleDateString() %>
+                      </div>
+                      <div class="small text-muted font-mono" style="font-size: 0.72rem;">
+                        <%= new Date(e.createdAt).toLocaleTimeString() %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-light"><%= e.name %></div>
+                      <% if (e.company) { %>
+                        <div class="small text-muted"><%= e.company %></div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="mailto:<%= e.email %>" class="text-teal text-decoration-none">
+                        <i class="bi bi-reply me-1"></i><%= e.email %>
+                      </a>
+                    </td>
+                    <td>
+                      <div class="small text-light">
+                        <%= e.message %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+    </section>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>
