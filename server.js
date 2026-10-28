@@ -22,10 +22,16 @@ const PORT = process.env.PORT || 3000;
 
 // Set EJS as templating engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+const viewsDir = fs.existsSync(path.join(process.cwd(), 'views'))
+  ? path.join(process.cwd(), 'views')
+  : path.join(__dirname, 'views');
+app.set('views', viewsDir);
 
 // Serve static assets from public directory
-app.use(express.static(path.join(__dirname, 'public')));
+const publicDir = fs.existsSync(path.join(process.cwd(), 'public'))
+  ? path.join(process.cwd(), 'public')
+  : path.join(__dirname, 'public');
+app.use(express.static(publicDir));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -77,6 +83,31 @@ app.get('/', (req, res) => {
     phone: '+971 4 234 5678',
     availability: 'Mon–Fri 9am–6pm GST'
   });
+});
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error('[Application Error]:', err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(500).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Application Notice | Usman Naeem Cyber Security</title>
+      <link rel="stylesheet" href="/css/site.css">
+    </head>
+    <body style="background: #060b19; color: #f8fafc; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem;">
+      <div style="background: rgba(12, 21, 46, 0.9); border: 1px solid rgba(0, 245, 212, 0.3); border-radius: 12px; padding: 2.5rem; max-width: 600px; text-align: center;">
+        <h2 style="color: #00f5d4; margin-bottom: 1rem;">Service Temporarily Updating</h2>
+        <p style="color: #94a3b8; margin-bottom: 1.5rem;">${err.message || 'The requested resource encountered a brief startup delay.'}</p>
+        <a href="/" style="background: #00f5d4; color: #060b19; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700;">Return to Home</a>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
 // Start server (only if not running under a serverless platform like Vercel)
