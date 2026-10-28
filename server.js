@@ -79,7 +79,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Usman Naeem Cyber Security Consulting running at http://localhost:${PORT}`);
-});
+// Start server (only if not running under a serverless platform like Vercel)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Usman Naeem Cyber Security Consulting running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

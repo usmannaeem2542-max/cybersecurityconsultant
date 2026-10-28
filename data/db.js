@@ -2,8 +2,9 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
-// Resolve database file path (default to data/consultant.db)
-const dbFilePath = process.env.DB_PATH || path.join(__dirname, 'consultant.db');
+// Resolve database file path (default to data/consultant.db, or /tmp/consultant.db on Vercel)
+const isVercel = Boolean(process.env.VERCEL);
+const dbFilePath = process.env.DB_PATH || (isVercel ? '/tmp/consultant.db' : path.join(__dirname, 'consultant.db'));
 const dbDir = path.dirname(dbFilePath);
 
 // Ensure the directory exists
