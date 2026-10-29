@@ -143,6 +143,22 @@
                 <h3 class="h5 mb-2">Step 1: Choose a Service</h3>
                 <p class="text-muted small mb-4">Select the primary domain you wish to discuss during the call.</p>
 
+                <!-- Service Type Quick Switch Banner -->
+                <div class="p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: rgba(255, 182, 39, 0.08); border: 1px solid rgba(255, 182, 39, 0.35);">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: rgba(255, 182, 39, 0.2); color: #ffb627;">
+                      <i class="bi bi-credit-card fs-5"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold text-white small">Stripe Deposit Service Available</div>
+                      <div class="text-muted small">Select <strong>Security Health Check</strong> for the AED 200 Stripe checkout deposit flow. Free discovery calls skip payment.</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-warning font-mono" id="quickSelectStripeServiceBtn">
+                    <i class="bi bi-lightning-charge-fill me-1"></i> Select Paid Service
+                  </button>
+                </div>
+
                 <div class="service-selection-grid mb-4">
                   <label class="service-select-card <%= formData.service === 'Vulnerability Assessment' ? 'selected' : '' %>">
                     <input type="radio" name="service" value="Vulnerability Assessment" class="d-none" <%= formData.service === 'Vulnerability Assessment' ? 'checked' : '' %> required>
@@ -181,17 +197,17 @@
                   </label>
 
                   <!-- Paid Service: Security Health Check -->
-                  <label class="service-select-card <%= formData.service === 'Security Health Check' ? 'selected' : '' %>">
+                  <label class="service-select-card <%= formData.service === 'Security Health Check' ? 'selected' : '' %>" style="border: 1px solid rgba(255, 182, 39, 0.45); background: rgba(255, 182, 39, 0.03);">
                     <input type="radio" name="service" value="Security Health Check" class="d-none" <%= formData.service === 'Security Health Check' ? 'checked' : '' %>>
-                    <div class="card-icon"><i class="bi bi-activity text-warning"></i></div>
+                    <div class="card-icon"><i class="bi bi-credit-card-2-front text-warning"></i></div>
                     <div class="card-content">
                       <div class="d-flex align-items-center justify-content-between mb-1">
-                        <div class="fw-bold text-light">Security Health Check</div>
-                        <span class="badge bg-warning-subtle text-warning border border-warning font-mono" style="font-size: 0.72rem;">
-                          <i class="bi bi-credit-card me-1"></i> AED 200 Deposit
+                        <div class="fw-bold text-white">Security Health Check</div>
+                        <span class="badge bg-warning text-dark font-mono fw-bold" style="font-size: 0.72rem;">
+                          <i class="bi bi-stripe me-1"></i> AED 200 Deposit
                         </span>
                       </div>
-                      <div class="text-muted small">Deep-dive technical posture review &amp; prioritized action report.</div>
+                      <div class="text-muted small">Deep-dive technical posture review &amp; prioritized action report. Requires Stripe deposit.</div>
                     </div>
                   </label>
 
@@ -460,6 +476,21 @@
         if (radio) radio.checked = true;
       });
     });
+
+    // Quick select paid service button
+    const quickSelectBtn = document.getElementById('quickSelectStripeServiceBtn');
+    if (quickSelectBtn) {
+      quickSelectBtn.addEventListener('click', () => {
+        const paidRadio = document.querySelector('input[value="Security Health Check"]');
+        if (paidRadio) {
+          serviceCards.forEach(c => c.classList.remove('selected'));
+          const paidCard = paidRadio.closest('.service-select-card');
+          if (paidCard) paidCard.classList.add('selected');
+          paidRadio.checked = true;
+          document.getElementById('step1Error')?.classList.add('d-none');
+        }
+      });
+    }
 
     // Time slot button selection
     const timeSlotBtns = document.querySelectorAll('.time-slot-btn');

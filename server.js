@@ -74,6 +74,8 @@ const adminRouter = require('./routes/admin');
 app.use('/booking', bookingRouter);
 app.use('/contact', contactRouter);
 app.get('/booking-success', (req, res, next) => bookingRouter.handleBookingSuccess(req, res, next));
+app.get('/stripe-checkout', (req, res, next) => bookingRouter.handleStripeCheckout(req, res, next));
+app.post('/stripe-checkout/confirm', (req, res, next) => bookingRouter.handleStripeCheckoutConfirm(req, res, next));
 app.use('/', adminRouter);
 
 app.get('/', (req, res) => {
