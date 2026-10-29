@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const appointmentService = require('../services/appointmentService');
+const emailService = require('../services/emailService');
 
 const ALLOWED_SERVICES = [
   'Vulnerability Assessment',
@@ -358,6 +359,11 @@ router.post('/', async (req, res) => {
     createdAt: savedBooking.createdAt
   };
 
+  // Send confirmation email immediately for free bookings (single-send protected)
+  emailService.sendBookingConfirmation(savedBooking).catch(err => {
+    console.error('[Email Dispatch Notice - Free Booking]:', err.message);
+  });
+
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.json({
       success: true,
@@ -453,6 +459,11 @@ async function handleBookingSuccess(req, res) {
         booking.status = 'Booked';
       }
 
+      // Send confirmation email after paid checkout (single-send protected)
+      emailService.sendBookingConfirmation(booking).catch(err => {
+        console.error('[Email Dispatch Notice - Paid Booking Simulator]:', err.message);
+      });
+
       return res.render('booking-success', {
         pageTitle: 'Deposit Received & Booking Confirmed | Usman Naeem Cyber Security',
         success: true,
@@ -489,6 +500,11 @@ async function handleBookingSuccess(req, res) {
         appointmentService.updateStatus(booking.id, 'Booked');
         booking.status = 'Booked';
       }
+
+      // Send confirmation email after paid checkout (single-send protected)
+      emailService.sendBookingConfirmation(booking).catch(err => {
+        console.error('[Email Dispatch Notice - Stripe Paid Booking]:', err.message);
+      });
 
       return res.render('booking-success', {
         pageTitle: 'Deposit Received & Booking Confirmed | Usman Naeem Cyber Security',

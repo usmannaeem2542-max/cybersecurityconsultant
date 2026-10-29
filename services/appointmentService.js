@@ -56,6 +56,10 @@ const updateBookingStatusStmt = db.prepare(`
   UPDATE bookings SET status = ? WHERE id = ?
 `);
 
+const updateBookingEmailSentStmt = db.prepare(`
+  UPDATE bookings SET confirmationEmailSentAt = ? WHERE id = ?
+`);
+
 // Enquiries Statements
 const insertEnquiryStmt = db.prepare(`
   INSERT INTO enquiries (name, email, company, message, createdAt)
@@ -208,6 +212,23 @@ function updateStripeSessionId(id, stripeSessionId) {
   return getBookingByIdStmt.get(numericId);
 }
 
+/**
+ * Retrieves a booking by its primary ID.
+ */
+function getBookingById(id) {
+  if (!id) return null;
+  return getBookingByIdStmt.get(Number(id));
+}
+
+/**
+ * Records the timestamp when the confirmation email was sent.
+ */
+function markConfirmationEmailSent(id) {
+  if (!id) return;
+  const now = new Date().toISOString();
+  updateBookingEmailSentStmt.run(now, Number(id));
+}
+
 // ============================================================================
 // Enquiries Operations
 // ============================================================================
@@ -297,12 +318,14 @@ function validateUserCredentials(email, plainPassword) {
 
 module.exports = {
   createBooking,
+  getBookingById,
   getBookingsByEmail,
   getBookingsByDate,
   listUpcomingBookings,
   updateStatus,
   getBookingByStripeSessionId,
   updateStripeSessionId,
+  markConfirmationEmailSent,
   createEnquiry,
   listEnquiries,
   findUserByEmail,

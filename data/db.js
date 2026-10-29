@@ -37,6 +37,7 @@ try {
       message TEXT,
       status TEXT NOT NULL DEFAULT 'Booked',
       stripeSessionId TEXT,
+      confirmationEmailSentAt TEXT,
       createdAt TEXT NOT NULL
     );
 
@@ -66,8 +67,14 @@ try {
       db.exec('ALTER TABLE bookings ADD COLUMN stripeSessionId TEXT;');
       console.log('[Database] Added stripeSessionId column to existing bookings table');
     }
+
+    const hasEmailSentCol = tableInfo.some(col => col.name === 'confirmationEmailSentAt');
+    if (!hasEmailSentCol) {
+      db.exec('ALTER TABLE bookings ADD COLUMN confirmationEmailSentAt TEXT;');
+      console.log('[Database] Added confirmationEmailSentAt column to existing bookings table');
+    }
   } catch (colErr) {
-    console.warn('[Database] Could not verify/alter stripeSessionId column:', colErr.message);
+    console.warn('[Database] Could not verify/alter bookings table columns:', colErr.message);
   }
 
   console.log('[Database] Initialized via native node:sqlite');
@@ -148,6 +155,13 @@ try {
             const [sessionId, id] = params;
             const b = store.bookings.find(item => item.id === Number(id));
             if (b) b.stripeSessionId = sessionId;
+            saveStore();
+            return {};
+          }
+          if (normalizedSql.startsWith('UPDATE bookings SET confirmationEmailSentAt = ? WHERE id = ?')) {
+            const [sentAt, id] = params;
+            const b = store.bookings.find(item => item.id === Number(id));
+            if (b) b.confirmationEmailSentAt = sentAt;
             saveStore();
             return {};
           }
