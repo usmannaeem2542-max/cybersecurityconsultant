@@ -27,6 +27,7 @@
           <% } %>
 
           <form action="/login" method="POST" autocomplete="off">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
             <div class="mb-3">
               <label for="adminEmail" class="form-label text-light fw-semibold">Admin Email</label>
               <div class="input-group">

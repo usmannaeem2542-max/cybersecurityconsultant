@@ -20,14 +20,26 @@ if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust reverse proxy (Vercel / Cloudflare / Nginx) for secure HTTPS cookies
+// Trust reverse proxy (Vercel / Cloudflare / Nginx) for secure HTTPS cookies and rate limiting
 app.set('trust proxy', 1);
 
+// Security: Helmet with sensible Content-Security-Policy (allows Bootstrap CDN)
+const {
+  helmetMiddleware,
+  loginLimiter,
+  contactLimiter,
+  bookingLimiter,
+  chatLimiter,
+  sessionCsrf,
+  verifyCsrfToken
+} = require('./middleware/security');
+app.use(helmetMiddleware);
+
 // Set EJS as templating engine
-app.set('view engine', 'ejs');
 const viewsDir = fs.existsSync(path.join(process.cwd(), 'views'))
   ? path.join(process.cwd(), 'views')
   : path.join(__dirname, 'views');
+app.set('view engine', 'ejs');
 app.set('views', viewsDir);
 
 // Serve static assets from public directory
@@ -38,7 +50,7 @@ app.use(express.static(publicDir));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session configuration
+// Session configuration (httpOnly, sameSite lax, secure in production)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'usman-naeem-cyber-security-session-key-random',
   resave: false,
@@ -51,6 +63,9 @@ app.use(session({
   }
 }));
 
+// Security: Per-Session CSRF Token generation with node:crypto
+app.use(sessionCsrf);
+
 // Default view locals available across all templates
 app.use((req, res, next) => {
   res.locals.brandName = 'Usman Naeem Cyber Security Consulting';
@@ -62,8 +77,18 @@ app.use((req, res, next) => {
   res.locals.availability = 'Mon–Fri 9am–6pm GST';
   res.locals.pageTitle = 'Usman Naeem Cyber Security Consulting | Independent Consultant Dubai';
   res.locals.currentUser = (req.session && req.session.user) ? req.session.user : null;
+  res.locals.csrfToken = req.session ? req.session.csrfToken : '';
   next();
 });
+
+// Security: Apply rate limits to sensitive routes
+app.use('/login', loginLimiter);
+app.use('/contact', contactLimiter);
+app.use('/booking', bookingLimiter);
+app.use('/api/chat', chatLimiter);
+
+// Security: Verify CSRF token on all POST requests
+app.use(verifyCsrfToken);
 
 // Import Routers
 const bookingRouter = require('./routes/booking');
@@ -93,29 +118,27 @@ app.get('/', (req, res) => {
   });
 });
 
-// Global error handling middleware
+// 404 handler - catch all unmatched routes and render generic error page
+app.use((req, res) => {
+  res.status(404).render('error', {
+    pageTitle: 'Page Not Found (404) | Usman Naeem Cyber Security',
+    statusCode: 404,
+    message: 'The requested resource could not be found or may have been relocated.'
+  });
+});
+
+// Global error handling middleware (generic error page that never shows stack traces)
 app.use((err, req, res, next) => {
-  console.error('[Application Error]:', err);
+  console.error('[Application Error]:', err.message);
   if (res.headersSent) {
     return next(err);
   }
-  res.status(500).send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>Application Notice | Usman Naeem Cyber Security</title>
-      <link rel="stylesheet" href="/css/site.css">
-    </head>
-    <body style="background: #060b19; color: #f8fafc; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem;">
-      <div style="background: rgba(12, 21, 46, 0.9); border: 1px solid rgba(0, 245, 212, 0.3); border-radius: 12px; padding: 2.5rem; max-width: 600px; text-align: center;">
-        <h2 style="color: #00f5d4; margin-bottom: 1rem;">Service Temporarily Updating</h2>
-        <p style="color: #94a3b8; margin-bottom: 1.5rem;">${err.message || 'The requested resource encountered a brief startup delay.'}</p>
-        <a href="/" style="background: #00f5d4; color: #060b19; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700;">Return to Home</a>
-      </div>
-    </body>
-    </html>
-  `);
+  const statusCode = err.status || err.statusCode || 500;
+  res.status(statusCode).render('error', {
+    pageTitle: `Application Notice (${statusCode}) | Usman Naeem Cyber Security`,
+    statusCode,
+    message: 'An unexpected application condition occurred. For security and privacy, technical stack traces are strictly suppressed.'
+  });
 });
 
 // Start server (only if not running under a serverless platform like Vercel)

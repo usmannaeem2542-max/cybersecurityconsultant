@@ -469,6 +469,7 @@
             </div>
 
             <form id="discoveryForm" action="/contact" method="POST" onsubmit="handleContactSubmit(event)">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
               <!-- Anti-bot Honeypot Field -->
               <div class="hp-trap" style="display: none !important; visibility: hidden !important;" aria-hidden="true">
                 <label for="hp_idx_website">Leave this field blank</label>

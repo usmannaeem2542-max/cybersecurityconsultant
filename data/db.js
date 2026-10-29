@@ -55,7 +55,7 @@ try {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       passwordHash TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'admin',
+      role TEXT NOT NULL DEFAULT 'client',
       createdAt TEXT NOT NULL
     );
   `);
@@ -82,6 +82,18 @@ try {
     }
   } catch (colErr) {
     console.warn('[Database] Could not verify/alter bookings table columns:', colErr.message);
+  }
+
+  // Ensure role column exists in users table, default "client", only if it is missing
+  try {
+    const userTableInfo = db.prepare('PRAGMA table_info(users)').all();
+    const hasRole = userTableInfo.some(col => col.name === 'role');
+    if (!hasRole) {
+      db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'client';");
+      console.log('[Database] Added role column to existing users table');
+    }
+  } catch (userColErr) {
+    console.warn('[Database] Could not verify/alter users table columns:', userColErr.message);
   }
 
   console.log('[Database] Initialized via native node:sqlite');
@@ -146,7 +158,7 @@ try {
           if (normalizedSql.startsWith('INSERT INTO users')) {
             const [email, passwordHash, role, createdAt] = params;
             const id = store.nextId.users++;
-            const record = { id, email, passwordHash, role: role || 'admin', createdAt };
+            const record = { id, email, passwordHash, role: role || 'client', createdAt };
             store.users.push(record);
             saveStore();
             return { lastInsertRowid: id };
@@ -179,10 +191,27 @@ try {
             saveStore();
             return {};
           }
+          if (normalizedSql.startsWith('UPDATE users SET passwordHash = ?, role = ? WHERE email = ?')) {
+            const [passwordHash, role, email] = params;
+            const u = store.users.find(item => item.email.toLowerCase() === email.toLowerCase());
+            if (u) {
+              u.passwordHash = passwordHash;
+              u.role = role || 'admin';
+            }
+            saveStore();
+            return {};
+          }
           if (normalizedSql.startsWith('UPDATE users SET passwordHash = ? WHERE email = ?')) {
             const [passwordHash, email] = params;
             const u = store.users.find(item => item.email.toLowerCase() === email.toLowerCase());
             if (u) u.passwordHash = passwordHash;
+            saveStore();
+            return {};
+          }
+          if (normalizedSql.startsWith('UPDATE users SET role = ? WHERE email = ?')) {
+            const [role, email] = params;
+            const u = store.users.find(item => item.email.toLowerCase() === email.toLowerCase());
+            if (u) u.role = role;
             saveStore();
             return {};
           }

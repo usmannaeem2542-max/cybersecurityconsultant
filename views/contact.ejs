@@ -53,6 +53,7 @@
 
             <!-- Contact Form -->
             <form action="/contact" method="POST" id="mainContactForm">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
               
               <!-- Anti-bot Honeypot Field (Invisible to legitimate human users) -->
               <div class="hp-trap" style="display: none !important; visibility: hidden !important;" aria-hidden="true">

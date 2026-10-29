@@ -4,34 +4,46 @@
   <div class="container py-4">
 
     <!-- Admin Dashboard Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary-subtle">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary-subtle position-relative">
       <div>
-        <div class="section-tag mb-2">
-          <i class="bi bi-shield-check"></i> Security Operations Center
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <!-- Required small label: "[brand name] Admin" -->
+          <span class="badge bg-navy-subtle text-teal border border-teal font-mono px-3 py-1 fs-6">
+            <i class="bi bi-shield-lock-fill me-1"></i><%= typeof brandName !== 'undefined' ? brandName : 'Usman Naeem Cyber Security Consulting' %> Admin
+          </span>
+          <span class="badge bg-secondary-subtle text-muted border border-secondary font-mono" style="font-size: 0.75rem;">
+            ROLE: <%= user.role.toUpperCase() %>
+          </span>
         </div>
-        <h1 class="h2 mb-1">Administrative Dashboard</h1>
+        <h1 class="h2 mb-1">Security Operations &amp; Admin Dashboard</h1>
         <p class="text-muted small mb-0">
-          Centralized management for client discovery sessions and confidential technical enquiries.
+          Centralized management for client discovery sessions, engagements, and confidential enquiries. Time zone: <strong class="text-teal font-mono">Asia/Dubai (GST)</strong>.
         </p>
       </div>
 
       <div class="d-flex align-items-center gap-3">
-        <div class="user-pill d-flex align-items-center gap-2 px-3 py-2 rounded-3 bg-navy-subtle border border-teal font-mono small">
-          <i class="bi bi-person-check-fill text-teal fs-5"></i>
-          <div>
-            <div class="text-muted" style="font-size: 0.7rem;">AUTHENTICATED AS</div>
-            <strong class="text-light"><%= user.email %></strong>
+        <!-- Required: "by [your name]" in the corner -->
+        <div class="text-end">
+          <div class="text-muted small font-mono mb-1">
+            by <strong class="text-teal"><%= typeof consultantName !== 'undefined' ? consultantName : 'Usman Naeem' %></strong>
+          </div>
+          <div class="user-pill d-flex align-items-center gap-2 px-3 py-1 rounded-3 bg-navy-subtle border border-teal font-mono small">
+            <i class="bi bi-person-check-fill text-teal"></i>
+            <span class="text-light"><%= user.email %></span>
           </div>
         </div>
 
-        <a href="/logout" class="btn btn-outline-danger btn-sm px-3 py-2 d-inline-flex align-items-center" id="adminLogoutBtn">
-          <i class="bi bi-box-arrow-right me-1"></i> Logout
-        </a>
+        <form action="/logout" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <button type="submit" class="btn btn-outline-danger btn-sm px-3 py-2 d-inline-flex align-items-center" id="adminLogoutBtn">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </button>
+        </form>
       </div>
     </div>
 
     <!-- Notification Alert -->
-    <% if (notification) { %>
+    <% if (locals.notification) { %>
       <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
         <i class="bi bi-check-circle-fill fs-5 text-success"></i>
         <div><%= notification %></div>
@@ -46,40 +58,49 @@
       </div>
     <% } %>
 
-    <!-- KPI Statistics -->
+    <!-- Top KPI Statistics with Count of Today's Bookings -->
     <div class="row g-3 mb-5">
       <% 
         const totalBookings = bookings.length;
         const activeBookings = bookings.filter(b => b.status === 'Booked').length;
-        const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
+        const completedBookings = bookings.filter(b => b.status === 'Completed').length;
         const totalEnquiries = enquiries.length;
       %>
+      <!-- Required: Count of today's bookings at the top (Asia/Dubai) -->
       <div class="col-6 col-lg-3">
-        <div class="stat-kpi-card p-3">
-          <div class="kpi-label">Total Bookings</div>
-          <div class="kpi-value text-white font-mono"><%= totalBookings %></div>
-          <div class="kpi-sub text-muted">All-time appointments</div>
+        <div class="stat-kpi-card p-3 border-teal shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="kpi-label text-teal fw-bold">Today's Bookings</div>
+            <i class="bi bi-calendar-day text-teal fs-5"></i>
+          </div>
+          <div class="kpi-value text-teal font-mono fs-2"><%= todayBookingsCount %></div>
+          <div class="kpi-sub text-muted font-mono" style="font-size: 0.75rem;">
+            Asia/Dubai (<%= dubaiDate %>)
+          </div>
         </div>
       </div>
+
       <div class="col-6 col-lg-3">
         <div class="stat-kpi-card p-3">
           <div class="kpi-label">Active / Confirmed</div>
-          <div class="kpi-value text-teal font-mono"><%= activeBookings %></div>
-          <div class="kpi-sub text-muted">Upcoming discovery calls</div>
+          <div class="kpi-value text-white font-mono fs-2"><%= activeBookings %></div>
+          <div class="kpi-sub text-muted">Awaiting session</div>
         </div>
       </div>
+
       <div class="col-6 col-lg-3">
         <div class="stat-kpi-card p-3">
-          <div class="kpi-label">Cancelled Slots</div>
-          <div class="kpi-value text-warning font-mono"><%= cancelledBookings %></div>
-          <div class="kpi-sub text-muted">Slots released</div>
+          <div class="kpi-label">Completed Sessions</div>
+          <div class="kpi-value text-success font-mono fs-2"><%= completedBookings %></div>
+          <div class="kpi-sub text-muted">Successfully held</div>
         </div>
       </div>
+
       <div class="col-6 col-lg-3">
         <div class="stat-kpi-card p-3">
           <div class="kpi-label">Client Enquiries</div>
-          <div class="kpi-value text-cyan font-mono"><%= totalEnquiries %></div>
-          <div class="kpi-sub text-muted">Contact form leads</div>
+          <div class="kpi-value text-cyan font-mono fs-2"><%= totalEnquiries %></div>
+          <div class="kpi-sub text-muted">Confidential inbound</div>
         </div>
       </div>
     </div>
@@ -97,7 +118,7 @@
           </p>
         </div>
         <span class="badge bg-navy-subtle text-teal border border-teal font-mono px-3 py-2">
-          <%= bookings.filter(b => b.status === 'Booked').length %> Booked
+          <%= activeBookings %> Booked
         </span>
       </div>
 
@@ -115,7 +136,7 @@
               <thead>
                 <tr>
                   <th scope="col" style="width: 220px;">Client Name</th>
-                  <th scope="col" style="width: 220px;">Date and Time (GST)</th>
+                  <th scope="col" style="width: 220px;">Date and Time (Asia/Dubai)</th>
                   <th scope="col">Service</th>
                   <th scope="col" style="width: 170px;">Reminder Status</th>
                   <th scope="col" style="width: 170px;" class="text-end">Staff Action</th>
@@ -156,6 +177,7 @@
                     </td>
                     <td class="text-end">
                       <form action="/admin/bookings/<%= b.id %>/send-reminder" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                         <button type="submit" class="btn btn-outline-warning btn-sm px-3 py-1 font-mono fw-semibold d-inline-flex align-items-center gap-1" id="staffReminderBtn-<%= b.id %>" title="Send reminder email to <%= b.clientEmail %>">
                           <i class="bi bi-bell-fill"></i> Send reminder
                         </button>
@@ -170,13 +192,18 @@
       <% } %>
     </section>
 
-    <!-- SECTION 1: UPCOMING BOOKINGS (SOONEST FIRST) -->
-    <section class="mb-5">
+    <!-- SECTION: TODAY'S AND UPCOMING BOOKINGS (ASIA/DUBAI TIME ZONE) -->
+    <section class="mb-5" id="all-bookings-section">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h4 mb-0">
-          <i class="bi bi-calendar3 me-2 text-teal"></i>Upcoming Bookings
-          <span class="badge bg-navy-subtle text-teal border border-teal ms-2 fs-6">Soonest First</span>
-        </h2>
+        <div>
+          <h2 class="h4 mb-1">
+            <i class="bi bi-calendar3 me-2 text-teal"></i>Today&rsquo;s &amp; Upcoming Bookings
+            <span class="badge bg-navy-subtle text-teal border border-teal ms-2 fs-6">Asia/Dubai</span>
+          </h2>
+          <p class="text-muted small mb-0">
+            Real-time appointments schedule with operational status controls.
+          </p>
+        </div>
         <a href="/booking" class="btn btn-sm btn-outline-teal d-none d-sm-inline-flex" target="_blank">
           <i class="bi bi-plus-circle me-1"></i> Public Booking Page
         </a>
@@ -195,90 +222,121 @@
               <thead>
                 <tr>
                   <th scope="col" style="width: 70px;">Ref</th>
-                  <th scope="col" style="width: 220px;">Date &amp; Time (GST)</th>
+                  <th scope="col" style="width: 220px;">Client Name</th>
+                  <th scope="col" style="width: 210px;">Date and Time (GST)</th>
                   <th scope="col">Service</th>
-                  <th scope="col">Client Details</th>
-                  <th scope="col">Requirements / Notes</th>
-                  <th scope="col" style="width: 110px;">Status</th>
-                  <th scope="col" style="width: 120px;" class="text-end">Actions</th>
+                  <th scope="col" style="width: 130px;">Status</th>
+                  <th scope="col" style="width: 280px;" class="text-end">Status Controls</th>
                 </tr>
               </thead>
               <tbody>
                 <% bookings.forEach(b => { %>
-                  <tr class="<%= b.status === 'Cancelled' ? 'opacity-50' : '' %>">
+                  <% const isToday = b.bookingDateTime && b.bookingDateTime.startsWith(dubaiDate); %>
+                  <tr class="<%= b.status === 'Cancelled' ? 'opacity-50' : (isToday ? 'table-active' : '') %>">
                     <td>
                       <span class="font-mono text-teal fw-bold">#<%= b.id %></span>
+                      <% if (isToday) { %>
+                        <span class="badge bg-teal text-dark font-mono d-block mt-1" style="font-size: 0.65rem;">TODAY</span>
+                      <% } %>
                     </td>
                     <td>
-                      <div class="fw-semibold text-light">
-                        <i class="bi bi-clock-fill text-teal me-1"></i><%= b.bookingDateTime %>
-                      </div>
-                      <div class="small text-muted font-mono" style="font-size: 0.75rem;">
-                        Recorded: <%= new Date(b.createdAt).toLocaleDateString() %>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="fw-semibold text-white"><%= b.service %></div>
-                    </td>
-                    <td>
-                      <div class="fw-semibold text-light"><%= b.clientName %></div>
+                      <div class="fw-semibold text-white"><%= b.clientName %></div>
                       <% if (b.clientCompany) { %>
                         <div class="small text-muted"><%= b.clientCompany %></div>
                       <% } %>
                       <div class="small">
-                        <a href="mailto:<%= b.clientEmail %>" class="text-teal text-decoration-none"><%= b.clientEmail %></a> &middot; 
-                        <span class="text-muted"><%= b.clientPhone %></span>
+                        <a href="mailto:<%= b.clientEmail %>" class="text-teal text-decoration-none font-mono" style="font-size: 0.78rem;"><%= b.clientEmail %></a>
+                        &middot; <span class="text-muted"><%= b.clientPhone %></span>
                       </div>
                     </td>
                     <td>
-                      <div class="small text-muted text-truncate-2" title="<%= b.message %>">
-                        <%= b.message || '—' %>
+                      <div class="fw-semibold text-light font-mono">
+                        <i class="bi bi-clock-fill text-teal me-1"></i><%= b.bookingDateTime %>
                       </div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-light"><%= b.service %></div>
+                      <% if (b.message) { %>
+                        <div class="small text-muted text-truncate-2 mt-1" title="<%= b.message %>">
+                          <i class="bi bi-chat-left-text me-1 text-dim"></i><%= b.message %>
+                        </div>
+                      <% } %>
                     </td>
                     <td>
                       <% if (b.status === 'Booked') { %>
                         <span class="badge bg-success-subtle text-success border border-success">
                           <i class="bi bi-check2-circle me-1"></i> Booked
                         </span>
-                      <% } else if (b.status === 'Pending') { %>
-                        <span class="badge bg-warning-subtle text-warning border border-warning" title="Awaiting Stripe deposit">
-                          <i class="bi bi-hourglass-split me-1"></i> Pending
+                      <% } else if (b.status === 'Completed') { %>
+                        <span class="badge bg-info-subtle text-info border border-info">
+                          <i class="bi bi-patch-check me-1"></i> Completed
+                        </span>
+                      <% } else if (b.status === 'No-show') { %>
+                        <span class="badge bg-warning-subtle text-warning border border-warning">
+                          <i class="bi bi-person-x me-1"></i> No-show
                         </span>
                       <% } else if (b.status === 'Cancelled') { %>
                         <span class="badge bg-danger-subtle text-danger border border-danger">
                           <i class="bi bi-x-circle me-1"></i> Cancelled
                         </span>
-                      <% } else { %>
-                        <span class="badge bg-secondary">
-                          <%= b.status %>
+                      <% } else if (b.status === 'Pending') { %>
+                        <span class="badge bg-secondary-subtle text-muted border border-secondary">
+                          <i class="bi bi-hourglass me-1"></i> Pending
                         </span>
+                      <% } else { %>
+                        <span class="badge bg-secondary"><%= b.status %></span>
                       <% } %>
 
                       <% if (b.stripeSessionId) { %>
                         <div class="mt-1">
-                          <span class="badge bg-navy-subtle text-cyan border border-cyan font-mono" style="font-size: 0.65rem;" title="<%= b.stripeSessionId %>">
-                            <i class="bi bi-stripe me-1"></i> Deposit
+                          <span class="badge bg-navy-subtle text-cyan border border-cyan font-mono" style="font-size: 0.65rem;">
+                            <i class="bi bi-stripe me-1"></i> Deposit Paid
                           </span>
                         </div>
                       <% } %>
                     </td>
+
+                    <!-- Buttons to mark "Completed", "No-show", "Cancelled" -->
                     <td class="text-end">
-                      <div class="d-flex justify-content-end gap-1">
-                        <% if (b.status === 'Booked') { %>
-                          <form action="/admin/bookings/<%= b.id %>/send-reminder" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-outline-warning btn-sm px-2 py-1" title="Send reminder email to <%= b.clientEmail %>">
-                              <i class="bi bi-bell-fill"></i>
+                      <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+                        <!-- Mark Completed -->
+                        <% if (b.status !== 'Completed') { %>
+                          <form action="/admin/bookings/<%= b.id %>/completed" method="POST" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <button type="submit" class="btn btn-outline-success btn-sm px-2 py-1 font-mono" title="Mark session as Completed">
+                              Completed
                             </button>
                           </form>
                         <% } %>
-                        <% if (b.status !== 'Cancelled') { %>
-                          <form action="/admin/bookings/<%= b.id %>/cancel" method="POST" onsubmit="return confirm('Cancel booking #<%= b.id %> for <%= b.clientName %>? This will free up the time slot.');">
-                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="Cancel this booking">
-                              <i class="bi bi-x-lg me-1"></i> Cancel
+
+                        <!-- Mark No-show -->
+                        <% if (b.status !== 'No-show') { %>
+                          <form action="/admin/bookings/<%= b.id %>/no-show" method="POST" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm px-2 py-1 font-mono" title="Mark as No-show">
+                              No-show
                             </button>
                           </form>
-                        <% } else { %>
-                          <span class="text-muted small fst-italic">Released</span>
+                        <% } %>
+
+                        <!-- Mark Cancelled -->
+                        <% if (b.status !== 'Cancelled') { %>
+                          <form action="/admin/bookings/<%= b.id %>/cancel" method="POST" class="d-inline" onsubmit="return confirm('Cancel booking #<%= b.id %>?');">
+                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1 font-mono" title="Mark as Cancelled">
+                              Cancelled
+                            </button>
+                          </form>
+                        <% } %>
+
+                        <!-- Send Reminder if Booked -->
+                        <% if (b.status === 'Booked') { %>
+                          <form action="/admin/bookings/<%= b.id %>/send-reminder" method="POST" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <button type="submit" class="btn btn-outline-warning btn-sm px-2 py-1 font-mono" title="Send reminder email">
+                              <i class="bi bi-bell-fill"></i>
+                            </button>
+                          </form>
                         <% } %>
                       </div>
                     </td>
@@ -291,8 +349,8 @@
       <% } %>
     </section>
 
-    <!-- SECTION 2: ALL ENQUIRIES (NEWEST FIRST) -->
-    <section>
+    <!-- SECTION: ALL CLIENT ENQUIRIES (NEWEST FIRST) -->
+    <section id="enquiries-section">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h4 mb-0">
           <i class="bi bi-envelope-paper me-2 text-cyan"></i>All Client Enquiries
@@ -330,22 +388,22 @@
                         <%= new Date(e.createdAt).toLocaleDateString() %>
                       </div>
                       <div class="small text-muted font-mono" style="font-size: 0.72rem;">
-                        <%= new Date(e.createdAt).toLocaleTimeString() %>
+                        <%= new Date(e.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
                       </div>
                     </td>
                     <td>
-                      <div class="fw-semibold text-light"><%= e.name %></div>
+                      <div class="fw-semibold text-white"><%= e.name %></div>
                       <% if (e.company) { %>
                         <div class="small text-muted"><%= e.company %></div>
                       <% } %>
                     </td>
                     <td>
-                      <a href="mailto:<%= e.email %>" class="text-teal text-decoration-none">
-                        <i class="bi bi-reply me-1"></i><%= e.email %>
+                      <a href="mailto:<%= e.email %>" class="text-teal text-decoration-none font-mono small">
+                        <%= e.email %>
                       </a>
                     </td>
                     <td>
-                      <div class="small text-light">
+                      <div class="text-light" style="white-space: pre-wrap; font-size: 0.9rem;">
                         <%= e.message %>
                       </div>
                     </td>

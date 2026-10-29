@@ -92,6 +92,10 @@ const updateUserPasswordStmt = db.prepare(`
   UPDATE users SET passwordHash = ? WHERE email = ?
 `);
 
+const updateUserPasswordAndRoleStmt = db.prepare(`
+  UPDATE users SET passwordHash = ?, role = ? WHERE email = ?
+`);
+
 // ============================================================================
 // Bookings Operations
 // ============================================================================
@@ -303,9 +307,9 @@ function seedAdminUser(email, plainPassword) {
     insertUserStmt.run(normalizedEmail, passwordHash, 'admin', now);
     console.log(`[Auth] Seeded new admin account: ${normalizedEmail}`);
   } else {
-    // Keep admin password synchronized with environment variables
-    updateUserPasswordStmt.run(passwordHash, normalizedEmail);
-    console.log(`[Auth] Synchronized admin password for: ${normalizedEmail}`);
+    // Keep admin password and role synchronized with environment variables
+    updateUserPasswordAndRoleStmt.run(passwordHash, 'admin', normalizedEmail);
+    console.log(`[Auth] Synchronized admin password and admin role for: ${normalizedEmail}`);
   }
 
   return findUserByEmail(normalizedEmail);
