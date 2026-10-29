@@ -1524,3 +1524,156 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   padding: 0 4px;
 }
 
+/* ==========================================================================
+   Mobile-Friendly Responsiveness Suite (Phones & Tablets)
+   ========================================================================== */
+
+/* Universal mobile touch target and input zoom prevention */
+@media (max-width: 768px) {
+  /* Prevent iOS Safari automatic zoom on inputs */
+  input, select, textarea, .form-control {
+    font-size: 16px !important;
+  }
+
+  /* Booking Card Padding */
+  .booking-card {
+    border-radius: 16px;
+  }
+
+  /* Stepper on tablets and small screens */
+  .wizard-stepper {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .step-num {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .step-text {
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
+  }
+
+  .stepper-line {
+    margin: 0 4px 1rem 4px;
+  }
+
+  /* Service Select Cards touch-optimized */
+  .service-select-card {
+    padding: 1rem;
+    gap: 0.85rem;
+  }
+
+  .service-select-card .card-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.15rem;
+  }
+
+  /* Admin Header & Tables */
+  .custom-admin-table th,
+  .custom-admin-table td {
+    padding: 0.75rem 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Time Slots: 2 clear, comfortable touch columns on mobile phones */
+  .time-slots-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem;
+  }
+
+  .time-slot-btn {
+    padding: 0.75rem 0.35rem;
+    font-size: 0.82rem;
+    min-height: 44px; /* standard mobile touch target */
+  }
+
+  /* Wizard Navigation Buttons stack ergonomically on phone screens */
+  .wizard-nav-btns {
+    flex-direction: column-reverse !important;
+    gap: 0.65rem !important;
+  }
+
+  .wizard-nav-btns .btn {
+    width: 100% !important;
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Admin Dashboard KPI Cards */
+  .stat-kpi-card {
+    padding: 0.85rem !important;
+  }
+
+  .stat-kpi-card .kpi-value {
+    font-size: 1.45rem !important;
+  }
+
+  .stat-kpi-card .kpi-label {
+    font-size: 0.68rem !important;
+  }
+
+  /* Floating Chat Assistant on phones */
+  #chatAssistantWidget {
+    bottom: 14px;
+    right: 14px;
+  }
+
+  .chat-launcher-btn {
+    padding: 9px 14px;
+  }
+
+  .chat-launcher-label {
+    font-size: 0.85rem;
+  }
+
+  .chat-window {
+    right: 10px;
+    bottom: 74px;
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    height: calc(100vh - 100px) !important;
+    max-height: 520px !important;
+    border-radius: 16px;
+  }
+
+  .chat-header {
+    padding: 12px 14px;
+  }
+
+  .chat-body {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .chat-bubble {
+    padding: 10px 14px;
+    font-size: 0.86rem;
+  }
+
+  .chat-chip {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+  }
+
+  /* Admin Action buttons */
+  .custom-admin-table td .btn-sm {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.75rem;
+    min-height: 34px;
+  }
+}
+
+

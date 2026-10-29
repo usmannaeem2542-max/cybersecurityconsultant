@@ -6,8 +6,21 @@
       <div class="col-lg-9 col-xl-8">
 
         <% if (confirmed && summary) { %>
-          <!-- Booking Confirmed View -->
-          <div class="booking-card p-4 p-md-5 text-center" id="bookingConfirmedCard">
+          <!-- Clear Prominent Success Alert Banner -->
+          <div class="alert alert-success d-flex align-items-center gap-3 p-3 p-md-4 mb-4 rounded-3 border-success shadow text-start" role="alert" id="bookingSuccessAlert">
+            <div class="rounded-circle bg-success text-dark p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+              <i class="bi bi-check-lg fs-3 fw-bold"></i>
+            </div>
+            <div>
+              <h4 class="h5 mb-1 text-white fw-bold">Booking Confirmed Successfully!</h4>
+              <p class="mb-0 text-light small">
+                Your consultation slot has been officially locked in. A confirmation email with preparation guidance has been dispatched to <strong><%= summary.email %></strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Booking Confirmed View Card -->
+          <div class="booking-card p-3 p-sm-4 p-md-5 text-center" id="bookingConfirmedCard">
             <div class="success-icon-badge mb-3">
               <i class="bi bi-calendar-check-fill"></i>
             </div>
@@ -16,10 +29,10 @@
             </div>
             <h1 class="h2 mb-2">Discovery Call Confirmed!</h1>
             <p class="text-muted mb-4">
-              Thank you, <strong><%= summary.name %></strong>. Your free 30-minute security discovery session request has been registered.
+              Thank you, <strong><%= summary.name %></strong>. Your free 30-minute security discovery session request has been registered in our calendar.
             </p>
 
-            <div class="summary-details-box text-start p-4 mb-4">
+            <div class="summary-details-box text-start p-3 p-md-4 mb-4">
               <h5 class="text-teal mb-3 font-mono border-bottom border-secondary-subtle pb-2">
                 <i class="bi bi-file-earmark-text me-2"></i>Engagement Summary
               </h5>
@@ -37,8 +50,8 @@
                 </div>
                 <div class="col-sm-6">
                   <div class="summary-label">Date &amp; Time Slot</div>
-                  <div class="summary-val text-teal">
-                    <%= summary.date %> at <%= summary.timeSlot %>
+                  <div class="summary-val text-teal font-mono fw-semibold">
+                    <i class="bi bi-clock-fill me-1"></i><%= summary.date %> at <%= summary.timeSlot %>
                   </div>
                   <div class="small text-muted font-mono"><%= summary.timeZone %></div>
                 </div>
@@ -50,7 +63,7 @@
                 </div>
                 <div class="col-sm-6">
                   <div class="summary-label">Contact Details</div>
-                  <div class="summary-val text-white">
+                  <div class="summary-val text-white font-mono small">
                     <%= summary.email %><br><%= summary.phone %>
                   </div>
                 </div>
@@ -69,11 +82,11 @@
                 <strong class="text-teal">What happens next?</strong>
               </div>
               <p class="small text-muted mb-0">
-                Your session has been recorded in our booking calendar. Usman Naeem will review your scope and send a Google Meet invite and confirmation to <strong><%= summary.email %></strong>.
+                Your session has been recorded in our booking calendar. Usman Naeem will review your scope and send a Google Meet link and session confirmation to <strong><%= summary.email %></strong>.
               </p>
             </div>
 
-            <div class="d-flex justify-content-center gap-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 gap-sm-3">
               <a href="/" class="btn btn-teal-glow px-4 py-2">
                 <i class="bi bi-house-door me-1"></i> Return to Home
               </a>
@@ -86,7 +99,7 @@
         <% } else { %>
 
           <!-- Booking Stepper Wizard Form -->
-          <div class="booking-card p-4 p-md-5">
+          <div class="booking-card p-3 p-sm-4 p-md-5">
             <div class="text-center mb-4">
               <div class="section-tag mb-2">
                 <i class="bi bi-calendar-event"></i> Free 30-Minute Consultation
@@ -112,8 +125,15 @@
               </div>
             <% } %>
 
+            <!-- Mobile Step Indicator Badge (Displays on small screens) -->
+            <div class="d-md-none text-center mb-3">
+              <span class="badge bg-navy-subtle text-teal border border-teal font-mono px-3 py-2">
+                <i class="bi bi-layers-fill me-1"></i>Step <span id="mobileCurrentStep">1</span> of 4: <span id="mobileStepName">Service</span>
+              </span>
+            </div>
+
             <!-- Wizard Step Navigation Indicators -->
-            <div class="wizard-stepper mb-5">
+            <div class="wizard-stepper mb-4 mb-md-5">
               <div class="stepper-step active" id="step-indicator-1">
                 <span class="step-num">1</span>
                 <span class="step-text">Service</span>
@@ -224,8 +244,8 @@
 
                 <div class="text-danger small mb-3 d-none" id="step1Error">Please choose a service option to proceed.</div>
 
-                <div class="d-flex justify-content-end">
-                  <button type="button" class="btn btn-teal-glow px-4 py-2" id="toStep2Btn">
+                <div class="d-flex justify-content-end wizard-nav-btns">
+                  <button type="button" class="btn btn-teal-glow px-4 py-2 w-100 w-sm-auto" id="toStep2Btn">
                     Next: Choose Date &amp; Time <i class="bi bi-arrow-right ms-1"></i>
                   </button>
                 </div>
@@ -256,7 +276,7 @@
                       value="<%= formData.date %>"
                       required
                     >
-                    <button type="button" class="btn btn-teal-glow px-3" id="calendarPickBtn" title="Open Calendar Picker">
+                    <button type="button" class="btn btn-teal-glow px-3 d-none d-sm-inline-flex align-items-center" id="calendarPickBtn" title="Open Calendar Picker">
                       <i class="bi bi-calendar-check me-1"></i> Open Calendar
                     </button>
                   </div>
@@ -285,11 +305,11 @@
 
                 <div class="text-danger small mb-3 d-none" id="step2Error">Please select a valid weekday and time slot.</div>
 
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-teal px-4 py-2" id="backToStep1Btn">
+                <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 wizard-nav-btns">
+                  <button type="button" class="btn btn-outline-teal px-4 py-2 w-100 w-sm-auto" id="backToStep1Btn">
                     <i class="bi bi-arrow-left me-1"></i> Back
                   </button>
-                  <button type="button" class="btn btn-teal-glow px-4 py-2" id="toStep3Btn">
+                  <button type="button" class="btn btn-teal-glow px-4 py-2 w-100 w-sm-auto" id="toStep3Btn">
                     Next: Your Details <i class="bi bi-arrow-right ms-1"></i>
                   </button>
                 </div>
@@ -373,11 +393,11 @@
 
                 <div class="text-danger small mb-3 d-none" id="step3Error">Please complete all required fields with valid details.</div>
 
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-teal px-4 py-2" id="backToStep2Btn">
+                <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 wizard-nav-btns">
+                  <button type="button" class="btn btn-outline-teal px-4 py-2 w-100 w-sm-auto" id="backToStep2Btn">
                     <i class="bi bi-arrow-left me-1"></i> Back
                   </button>
-                  <button type="button" class="btn btn-teal-glow px-4 py-2" id="toStep4Btn">
+                  <button type="button" class="btn btn-teal-glow px-4 py-2 w-100 w-sm-auto" id="toStep4Btn">
                     Review Summary <i class="bi bi-arrow-right ms-1"></i>
                   </button>
                 </div>
@@ -429,11 +449,11 @@
                   </div>
                 </div>
 
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-teal px-4 py-2" id="backToStep3Btn">
+                <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 wizard-nav-btns">
+                  <button type="button" class="btn btn-outline-teal px-4 py-2 w-100 w-sm-auto" id="backToStep3Btn">
                     <i class="bi bi-arrow-left me-1"></i> Edit Details
                   </button>
-                  <button type="submit" class="btn btn-teal-glow px-4 py-2" id="confirmBookingBtn">
+                  <button type="submit" class="btn btn-teal-glow px-4 py-2 w-100 w-sm-auto" id="confirmBookingBtn">
                     <span id="confirmBookingBtnContent"><i class="bi bi-check2-circle me-1"></i> Confirm Booking</span>
                   </button>
                 </div>
@@ -599,6 +619,14 @@
         ind4.classList.add('active');
         updateSummary();
       }
+
+      // Update mobile stepper badge
+      const mobStepNum = document.getElementById('mobileCurrentStep');
+      const mobStepName = document.getElementById('mobileStepName');
+      const stepLabels = ['Service', 'Date & Time', 'Your Details', 'Confirm'];
+      if (mobStepNum) mobStepNum.textContent = target;
+      if (mobStepName) mobStepName.textContent = stepLabels[target - 1] || '';
+
       window.scrollTo({ top: 100, behavior: 'smooth' });
     }
 

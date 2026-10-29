@@ -4,9 +4,9 @@
   <div class="container py-4">
 
     <!-- Admin Dashboard Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary-subtle position-relative">
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary-subtle position-relative">
       <div>
-        <div class="d-flex align-items-center gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
           <!-- Required small label: "[brand name] Admin" -->
           <span class="badge bg-navy-subtle text-teal border border-teal font-mono px-3 py-1 fs-6">
             <i class="bi bi-shield-lock-fill me-1"></i><%= typeof brandName !== 'undefined' ? brandName : 'Usman Naeem Cyber Security Consulting' %> Admin
@@ -21,15 +21,15 @@
         </p>
       </div>
 
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center justify-content-between w-100 w-md-auto gap-3">
         <!-- Required: "by [your name]" in the corner -->
-        <div class="text-end">
+        <div class="text-start text-md-end">
           <div class="text-muted small font-mono mb-1">
             by <strong class="text-teal"><%= typeof consultantName !== 'undefined' ? consultantName : 'Usman Naeem' %></strong>
           </div>
           <div class="user-pill d-flex align-items-center gap-2 px-3 py-1 rounded-3 bg-navy-subtle border border-teal font-mono small">
             <i class="bi bi-person-check-fill text-teal"></i>
-            <span class="text-light"><%= user.email %></span>
+            <span class="text-light text-truncate" style="max-width: 170px;"><%= user.email %></span>
           </div>
         </div>
 
@@ -130,6 +130,9 @@
           <p class="small text-muted mb-0">Active bookings with status &ldquo;Booked&rdquo; will appear here for staff reminder dispatch.</p>
         </div>
       <% } else { %>
+        <div class="d-md-none text-muted small font-mono mb-2">
+          <i class="bi bi-arrows-expand me-1 text-teal"></i> Swipe horizontally to view all fields &amp; reminder controls &rarr;
+        </div>
         <div class="booking-card p-0 overflow-hidden shadow mb-4">
           <div class="table-responsive">
             <table class="table table-dark table-hover align-middle mb-0 custom-admin-table">
@@ -216,6 +219,9 @@
           <p class="small mb-0">No discovery call requests have been submitted yet.</p>
         </div>
       <% } else { %>
+        <div class="d-md-none text-muted small font-mono mb-2">
+          <i class="bi bi-arrows-expand me-1 text-teal"></i> Swipe horizontally to view all fields &amp; status controls &rarr;
+        </div>
         <div class="booking-card p-0 overflow-hidden shadow">
           <div class="table-responsive">
             <table class="table table-dark table-hover align-middle mb-0 custom-admin-table">
@@ -365,6 +371,9 @@
           <p class="small mb-0">All messages submitted via the contact form will appear here.</p>
         </div>
       <% } else { %>
+        <div class="d-md-none text-muted small font-mono mb-2">
+          <i class="bi bi-arrows-expand me-1 text-teal"></i> Swipe horizontally to view full messages &amp; details &rarr;
+        </div>
         <div class="booking-card p-0 overflow-hidden shadow">
           <div class="table-responsive">
             <table class="table table-dark table-hover align-middle mb-0 custom-admin-table">
