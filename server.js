@@ -69,10 +69,12 @@ app.use((req, res, next) => {
 const bookingRouter = require('./routes/booking');
 const contactRouter = require('./routes/contact');
 const adminRouter = require('./routes/admin');
+const chatRouter = require('./routes/chat');
 
 // Mount Routers
 app.use('/booking', bookingRouter);
 app.use('/contact', contactRouter);
+app.use('/api', chatRouter);
 app.get('/booking-success', (req, res, next) => bookingRouter.handleBookingSuccess(req, res, next));
 app.get('/stripe-checkout', (req, res, next) => bookingRouter.handleStripeCheckout(req, res, next));
 app.post('/stripe-checkout/confirm', (req, res, next) => bookingRouter.handleStripeCheckoutConfirm(req, res, next));

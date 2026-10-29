@@ -48,33 +48,280 @@
     </div>
   </footer>
 
+  <!-- Floating AI Chat Assistant Widget -->
+  <div id="chatAssistantWidget">
+    <!-- Floating Launcher Button -->
+    <button type="button" id="chatLauncherBtn" class="chat-launcher-btn" aria-label="Open Ask Bot Assistant chat" title="Ask Bot Assistant">
+      <div class="chat-launcher-icon">
+        <i class="bi bi-robot"></i>
+        <span class="chat-status-pulse"></span>
+      </div>
+      <span class="chat-launcher-label">Ask Bot Assistant</span>
+    </button>
+
+    <!-- Chat Window Container -->
+    <div id="chatWindow" class="chat-window" role="dialog" aria-modal="false" aria-label="Ask Bot Assistant">
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div class="chat-header-avatar">
+            <i class="bi bi-robot"></i>
+          </div>
+          <div>
+            <div class="chat-header-title">Ask Bot Assistant</div>
+            <div class="chat-header-subtitle">
+              <span class="chat-status-dot"></span>
+              <span>Grounded Cyber AI · Online</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="chatCloseBtn" class="chat-close-btn" aria-label="Close Chat">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Messages Body -->
+      <div id="chatMessages" class="chat-body" aria-live="polite">
+        <!-- Initial welcome bot message -->
+        <div class="chat-msg bot">
+          <div class="chat-bubble">Hello! I am <strong>Ask Bot Assistant</strong> for Usman Naeem Cyber Security Consulting. How can I help you today?</div>
+          <div class="chat-sign-off">— OpenAI, by Usman Naeem</div>
+          <div class="chat-chips-container mt-2">
+            <button type="button" class="chat-chip" data-query="What services do you offer?">Services</button>
+            <button type="button" class="chat-chip" data-query="Tell me about Usman Naeem">About &amp; Certs</button>
+            <button type="button" class="chat-chip" data-query="How does your assessment process work?">Process</button>
+            <button type="button" class="chat-chip" data-query="What is your pricing?">Pricing</button>
+            <button type="button" class="chat-chip" data-query="What are your hours and availability?">Availability</button>
+            <button type="button" class="chat-chip" data-query="How can I contact you?">Contact</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer / Input Form -->
+      <div class="chat-footer">
+        <form id="chatForm" onsubmit="return false;">
+          <div class="chat-input-row">
+            <input 
+              type="text" 
+              id="chatInput" 
+              class="chat-input" 
+              placeholder="Ask a question... (max 500 chars)" 
+              maxlength="500" 
+              autocomplete="off"
+            />
+            <button type="submit" id="chatSendBtn" class="chat-send-btn" aria-label="Send Message" disabled>
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </div>
+          <div class="chat-meta-row">
+            <span>Grounded assistant · 10-message memory</span>
+            <span id="chatCharCount">0 / 500</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap 5 Bundle JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-  <!-- Interactive script for Navbar state and UI Polish -->
+  <!-- Interactive script for Navbar state, Chat Assistant, and UI Polish -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Navbar scroll behavior
       const navbar = document.getElementById('mainNav');
-      window.addEventListener('scroll', () => {
-        if (window.scrollY > 40) {
-          navbar.classList.add('scrolled');
-        } else {
-          navbar.classList.remove('scrolled');
-        }
-      });
+      if (navbar) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 40) {
+            navbar.classList.add('scrolled');
+          } else {
+            navbar.classList.remove('scrolled');
+          }
+        });
+      }
 
       // Close mobile navbar on nav link click
       const navLinks = document.querySelectorAll('.navbar-nav .nav-link, .navbar-nav .btn');
       const navCollapse = document.getElementById('navContent');
-      navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          if (navCollapse.classList.contains('show')) {
-            const bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
-            if (bsCollapse) bsCollapse.hide();
-          }
+      if (navCollapse) {
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            if (navCollapse.classList.contains('show')) {
+              const bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+              if (bsCollapse) bsCollapse.hide();
+            }
+          });
         });
+      }
+
+      // Floating AI Assistant Logic
+      const chatLauncher = document.getElementById('chatLauncherBtn');
+      const chatWindow = document.getElementById('chatWindow');
+      const chatCloseBtn = document.getElementById('chatCloseBtn');
+      const chatMessages = document.getElementById('chatMessages');
+      const chatForm = document.getElementById('chatForm');
+      const chatInput = document.getElementById('chatInput');
+      const chatSendBtn = document.getElementById('chatSendBtn');
+      const chatCharCount = document.getElementById('chatCharCount');
+
+      if (!chatLauncher || !chatWindow || !chatForm || !chatInput) return;
+
+      // Keep last 10 messages for context
+      const conversationHistory = [];
+      let isSending = false;
+
+      function toggleChat(open) {
+        const isOpen = open !== undefined ? open : !chatWindow.classList.contains('open');
+        if (isOpen) {
+          chatWindow.classList.add('open');
+          chatLauncher.style.display = 'none';
+          chatInput.focus();
+        } else {
+          chatWindow.classList.remove('open');
+          chatLauncher.style.display = 'flex';
+        }
+      }
+
+      chatLauncher.addEventListener('click', () => toggleChat(true));
+      chatCloseBtn.addEventListener('click', () => toggleChat(false));
+
+      // Character counter & send button state
+      chatInput.addEventListener('input', () => {
+        const len = chatInput.value.length;
+        if (chatCharCount) {
+          chatCharCount.textContent = `${len} / 500`;
+        }
+        if (chatSendBtn) {
+          chatSendBtn.disabled = len === 0 || len > 500 || isSending;
+        }
+      });
+
+      function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function appendUserMessage(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-msg user';
+        msgDiv.innerHTML = `<div class="chat-bubble">${escapeHtml(text)}</div>`;
+        chatMessages.appendChild(msgDiv);
+        scrollToBottom();
+      }
+
+      function appendBotMessage(replyText) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-msg bot';
+        
+        // Check if sign-off is at the end to style it cleanly
+        const lines = replyText.split('\n');
+        let signOffText = '';
+        let bodyText = replyText;
+
+        const lastLine = lines[lines.length - 1].trim();
+        if (lastLine.startsWith('— ') && lastLine.includes('Usman Naeem')) {
+          signOffText = lastLine;
+          bodyText = lines.slice(0, lines.length - 1).join('\n').trim();
+        }
+
+        let innerContent = `<div class="chat-bubble">${escapeHtml(bodyText)}</div>`;
+        if (signOffText) {
+          innerContent += `<div class="chat-sign-off">${escapeHtml(signOffText)}</div>`;
+        }
+
+        msgDiv.innerHTML = innerContent;
+        chatMessages.appendChild(msgDiv);
+        scrollToBottom();
+      }
+
+      function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-typing';
+        typingDiv.id = 'chatTypingIndicator';
+        typingDiv.innerHTML = `
+          <div class="chat-typing-dot"></div>
+          <div class="chat-typing-dot"></div>
+          <div class="chat-typing-dot"></div>
+        `;
+        chatMessages.appendChild(typingDiv);
+        scrollToBottom();
+      }
+
+      function removeTypingIndicator() {
+        const indicator = document.getElementById('chatTypingIndicator');
+        if (indicator) {
+          indicator.remove();
+        }
+      }
+
+      async function sendUserQuery(query) {
+        const text = (query || chatInput.value || '').trim();
+        if (!text || text.length > 500 || isSending) return;
+
+        isSending = true;
+        chatInput.value = '';
+        if (chatCharCount) chatCharCount.textContent = '0 / 500';
+        if (chatSendBtn) chatSendBtn.disabled = true;
+
+        appendUserMessage(text);
+        showTypingIndicator();
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: text,
+              history: conversationHistory.slice(-10)
+            })
+          });
+
+          const data = await res.json();
+          removeTypingIndicator();
+
+          if (res.ok && data && data.reply) {
+            appendBotMessage(data.reply);
+            // Record in conversation history (last 10)
+            conversationHistory.push({ role: 'user', content: text });
+            conversationHistory.push({ role: 'assistant', content: data.reply });
+            if (conversationHistory.length > 10) {
+              conversationHistory.splice(0, conversationHistory.length - 10);
+            }
+          } else {
+            const errReply = (data && data.error) ? data.error : 'I encountered an error connecting to the service. Please try again or book a discovery call.';
+            appendBotMessage(`${errReply}\n\n— OpenAI, by Usman Naeem`);
+          }
+        } catch (err) {
+          removeTypingIndicator();
+          appendBotMessage(`Connection error. Please try again shortly or contact usman@usmancybersecurity.com.\n\n— OpenAI, by Usman Naeem`);
+        } finally {
+          isSending = false;
+          if (chatSendBtn) chatSendBtn.disabled = chatInput.value.trim().length === 0;
+          chatInput.focus();
+        }
+      }
+
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sendUserQuery();
+      });
+
+      // Quick suggestion chips
+      chatMessages.addEventListener('click', (e) => {
+        const chip = e.target.closest('.chat-chip');
+        if (chip && chip.dataset.query) {
+          sendUserQuery(chip.dataset.query);
+        }
       });
     });
   </script>
 </body>
 </html>
+
