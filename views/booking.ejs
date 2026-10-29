@@ -180,6 +180,21 @@
                     </div>
                   </label>
 
+                  <!-- Paid Service: Security Health Check -->
+                  <label class="service-select-card <%= formData.service === 'Security Health Check' ? 'selected' : '' %>">
+                    <input type="radio" name="service" value="Security Health Check" class="d-none" <%= formData.service === 'Security Health Check' ? 'checked' : '' %>>
+                    <div class="card-icon"><i class="bi bi-activity text-warning"></i></div>
+                    <div class="card-content">
+                      <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="fw-bold text-light">Security Health Check</div>
+                        <span class="badge bg-warning-subtle text-warning border border-warning font-mono" style="font-size: 0.72rem;">
+                          <i class="bi bi-credit-card me-1"></i> AED 200 Deposit
+                        </span>
+                      </div>
+                      <div class="text-muted small">Deep-dive technical posture review &amp; prioritized action report.</div>
+                    </div>
+                  </label>
+
                   <label class="service-select-card <%= formData.service === 'Not sure yet' ? 'selected' : '' %>">
                     <input type="radio" name="service" value="Not sure yet" class="d-none" <%= formData.service === 'Not sure yet' ? 'checked' : '' %>>
                     <div class="card-icon"><i class="bi bi-question-circle"></i></div>
@@ -366,6 +381,10 @@
                       <div class="summary-val text-white fw-semibold" id="sumService">—</div>
                     </div>
                     <div class="col-md-6">
+                      <div class="summary-label">Session Fee / Deposit</div>
+                      <div class="summary-val font-mono" id="sumFee">—</div>
+                    </div>
+                    <div class="col-md-6">
                       <div class="summary-label">Scheduled Date &amp; Time (Asia/Dubai)</div>
                       <div class="summary-val text-teal fw-semibold" id="sumDateTime">—</div>
                     </div>
@@ -384,11 +403,11 @@
                   </div>
                 </div>
 
-                <div class="alert alert-dark bg-navy-subtle border-secondary mb-4 py-3">
+                <div class="alert alert-dark bg-navy-subtle border-secondary mb-4 py-3" id="summaryNoticeBox">
                   <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-check text-teal fs-5"></i>
-                    <div class="small text-muted">
-                      No commitment required. Free 30-minute introductory discovery session. Nothing is saved to a database yet.
+                    <i class="bi bi-shield-check text-teal fs-5" id="summaryNoticeIcon"></i>
+                    <div class="small text-muted" id="summaryNoticeText">
+                      No commitment required. Free 30-minute introductory discovery session.
                     </div>
                   </div>
                 </div>
@@ -398,7 +417,7 @@
                     <i class="bi bi-arrow-left me-1"></i> Edit Details
                   </button>
                   <button type="submit" class="btn btn-teal-glow px-4 py-2" id="confirmBookingBtn">
-                    <i class="bi bi-check2-circle me-1"></i> Confirm Booking
+                    <span id="confirmBookingBtnContent"><i class="bi bi-check2-circle me-1"></i> Confirm Booking</span>
                   </button>
                 </div>
               </div>
@@ -623,6 +642,27 @@
       document.getElementById('sumNameCompany').textContent = company ? `${name} (${company})` : name;
       document.getElementById('sumContact').textContent = `${email} · ${phone}`;
       document.getElementById('sumMessage').textContent = msg;
+
+      const isPaid = checkedService === 'Security Health Check';
+      const sumFee = document.getElementById('sumFee');
+      const noticeBox = document.getElementById('summaryNoticeBox');
+      const noticeIcon = document.getElementById('summaryNoticeIcon');
+      const noticeText = document.getElementById('summaryNoticeText');
+      const btnContent = document.getElementById('confirmBookingBtnContent');
+
+      if (isPaid) {
+        if (sumFee) sumFee.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-credit-card me-1"></i> AED 200.00 Deposit</span> <span class="badge bg-warning-subtle text-warning border border-warning ms-1">Stripe Checkout</span>';
+        if (noticeBox) noticeBox.className = 'alert alert-warning bg-navy-subtle border-warning mb-4 py-3';
+        if (noticeIcon) noticeIcon.className = 'bi bi-credit-card text-warning fs-5';
+        if (noticeText) noticeText.innerHTML = '<strong class="text-warning">Stripe Deposit Required:</strong> A one-off <strong>AED 200</strong> deposit is required to confirm this deep-dive technical health check. Clicking below will redirect you to the secure Stripe-hosted checkout page.';
+        if (btnContent) btnContent.innerHTML = '<i class="bi bi-stripe me-1"></i> Proceed to Stripe Deposit (AED 200) <i class="bi bi-arrow-right ms-1"></i>';
+      } else {
+        if (sumFee) sumFee.innerHTML = '<span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-gift me-1"></i> Free Discovery Call (0 AED)</span>';
+        if (noticeBox) noticeBox.className = 'alert alert-dark bg-navy-subtle border-secondary mb-4 py-3';
+        if (noticeIcon) noticeIcon.className = 'bi bi-shield-check text-teal fs-5';
+        if (noticeText) noticeText.textContent = 'No commitment required. Free 30-minute introductory discovery session.';
+        if (btnContent) btnContent.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Confirm Booking';
+      }
     }
   });
 </script>

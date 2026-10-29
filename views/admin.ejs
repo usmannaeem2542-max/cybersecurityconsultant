@@ -146,6 +146,10 @@
                         <span class="badge bg-success-subtle text-success border border-success">
                           <i class="bi bi-check2-circle me-1"></i> Booked
                         </span>
+                      <% } else if (b.status === 'Pending') { %>
+                        <span class="badge bg-warning-subtle text-warning border border-warning" title="Awaiting Stripe deposit">
+                          <i class="bi bi-hourglass-split me-1"></i> Pending
+                        </span>
                       <% } else if (b.status === 'Cancelled') { %>
                         <span class="badge bg-danger-subtle text-danger border border-danger">
                           <i class="bi bi-x-circle me-1"></i> Cancelled
@@ -155,9 +159,17 @@
                           <%= b.status %>
                         </span>
                       <% } %>
+
+                      <% if (b.stripeSessionId) { %>
+                        <div class="mt-1">
+                          <span class="badge bg-navy-subtle text-cyan border border-cyan font-mono" style="font-size: 0.65rem;" title="<%= b.stripeSessionId %>">
+                            <i class="bi bi-stripe me-1"></i> Deposit
+                          </span>
+                        </div>
+                      <% } %>
                     </td>
                     <td class="text-end">
-                      <% if (b.status === 'Booked') { %>
+                      <% if (b.status !== 'Cancelled') { %>
                         <form action="/admin/bookings/<%= b.id %>/cancel" method="POST" onsubmit="return confirm('Cancel booking #<%= b.id %> for <%= b.clientName %>? This will free up the time slot.');">
                           <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="Cancel this booking">
                             <i class="bi bi-x-lg me-1"></i> Cancel

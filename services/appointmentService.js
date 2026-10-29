@@ -23,8 +23,17 @@ const insertBookingStmt = db.prepare(`
     clientEmail, 
     message, 
     status, 
+    stripeSessionId,
     createdAt
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`);
+
+const getBookingByStripeSessionIdStmt = db.prepare(`
+  SELECT * FROM bookings WHERE stripeSessionId = ? LIMIT 1
+`);
+
+const updateBookingStripeSessionIdStmt = db.prepare(`
+  UPDATE bookings SET stripeSessionId = ? WHERE id = ?
 `);
 
 const getBookingByIdStmt = db.prepare(`
@@ -91,7 +100,8 @@ function createBooking({
   clientPhone,
   clientEmail,
   message,
-  status = 'Booked'
+  status = 'Booked',
+  stripeSessionId = null
 }) {
   if (!service || !bookingDateTime || !clientName || !clientEmail || !clientPhone) {
     throw new Error('Missing required booking fields.');
@@ -115,6 +125,7 @@ function createBooking({
     clientEmail,
     message || '',
     status || 'Booked',
+    stripeSessionId || null,
     now
   );
 
@@ -174,6 +185,26 @@ function updateStatus(id, newStatus) {
   }
   const numericId = Number(id);
   updateBookingStatusStmt.run(newStatus, numericId);
+  return getBookingByIdStmt.get(numericId);
+}
+
+/**
+ * Retrieves a booking record by its associated Stripe Checkout Session ID.
+ */
+function getBookingByStripeSessionId(stripeSessionId) {
+  if (!stripeSessionId) return null;
+  return getBookingByStripeSessionIdStmt.get(stripeSessionId.trim());
+}
+
+/**
+ * Associates a Stripe Checkout Session ID with an existing booking.
+ */
+function updateStripeSessionId(id, stripeSessionId) {
+  if (!id || !stripeSessionId) {
+    throw new Error('Booking ID and stripeSessionId are required.');
+  }
+  const numericId = Number(id);
+  updateBookingStripeSessionIdStmt.run(stripeSessionId.trim(), numericId);
   return getBookingByIdStmt.get(numericId);
 }
 
@@ -270,6 +301,8 @@ module.exports = {
   getBookingsByDate,
   listUpcomingBookings,
   updateStatus,
+  getBookingByStripeSessionId,
+  updateStripeSessionId,
   createEnquiry,
   listEnquiries,
   findUserByEmail,

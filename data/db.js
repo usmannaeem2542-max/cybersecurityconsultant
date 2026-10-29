@@ -36,6 +36,7 @@ try {
       clientEmail TEXT NOT NULL,
       message TEXT,
       status TEXT NOT NULL DEFAULT 'Booked',
+      stripeSessionId TEXT,
       createdAt TEXT NOT NULL
     );
 
@@ -56,6 +57,19 @@ try {
       createdAt TEXT NOT NULL
     );
   `);
+
+  // Ensure stripeSessionId column exists in bookings table, only if it is missing
+  try {
+    const tableInfo = db.prepare('PRAGMA table_info(bookings)').all();
+    const hasStripeSessionId = tableInfo.some(col => col.name === 'stripeSessionId');
+    if (!hasStripeSessionId) {
+      db.exec('ALTER TABLE bookings ADD COLUMN stripeSessionId TEXT;');
+      console.log('[Database] Added stripeSessionId column to existing bookings table');
+    }
+  } catch (colErr) {
+    console.warn('[Database] Could not verify/alter stripeSessionId column:', colErr.message);
+  }
+
   console.log('[Database] Initialized via native node:sqlite');
 } catch (nativeErr) {
   console.warn('[Database] Native node:sqlite unavailable in this environment, using serverless fallback:', nativeErr.message);
@@ -94,9 +108,15 @@ try {
       return {
         run: (...params) => {
           if (normalizedSql.startsWith('INSERT INTO bookings')) {
-            const [service, bookingDateTime, clientName, clientCompany, clientPhone, clientEmail, message, status, createdAt] = params;
+            let service, bookingDateTime, clientName, clientCompany, clientPhone, clientEmail, message, status, stripeSessionId, createdAt;
+            if (params.length === 10) {
+              [service, bookingDateTime, clientName, clientCompany, clientPhone, clientEmail, message, status, stripeSessionId, createdAt] = params;
+            } else {
+              [service, bookingDateTime, clientName, clientCompany, clientPhone, clientEmail, message, status, createdAt] = params;
+              stripeSessionId = null;
+            }
             const id = store.nextId.bookings++;
-            const record = { id, service, bookingDateTime, clientName, clientCompany, clientPhone, clientEmail, message, status: status || 'Booked', createdAt };
+            const record = { id, service, bookingDateTime, clientName, clientCompany, clientPhone, clientEmail, message, status: status || 'Booked', stripeSessionId: stripeSessionId || null, createdAt };
             store.bookings.push(record);
             saveStore();
             return { lastInsertRowid: id };
@@ -124,6 +144,13 @@ try {
             saveStore();
             return {};
           }
+          if (normalizedSql.startsWith('UPDATE bookings SET stripeSessionId = ? WHERE id = ?')) {
+            const [sessionId, id] = params;
+            const b = store.bookings.find(item => item.id === Number(id));
+            if (b) b.stripeSessionId = sessionId;
+            saveStore();
+            return {};
+          }
           if (normalizedSql.startsWith('UPDATE users SET passwordHash = ? WHERE email = ?')) {
             const [passwordHash, email] = params;
             const u = store.users.find(item => item.email.toLowerCase() === email.toLowerCase());
@@ -141,6 +168,10 @@ try {
           if (normalizedSql.includes('FROM bookings WHERE id = ?')) {
             const [id] = params;
             return store.bookings.find(b => b.id === Number(id)) || null;
+          }
+          if (normalizedSql.includes('FROM bookings WHERE stripeSessionId = ?')) {
+            const [sessionId] = params;
+            return store.bookings.find(b => b.stripeSessionId === sessionId) || null;
           }
           if (normalizedSql.includes('FROM enquiries WHERE id = ?')) {
             const [id] = params;

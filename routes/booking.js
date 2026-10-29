@@ -1,13 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const appointmentService = require('../services/appointmentService');
 
 const ALLOWED_SERVICES = [
   'Vulnerability Assessment',
   'Penetration Testing',
   'Security Awareness Training',
   'Compliance & Policy Review (ISO 27001)',
+  'Security Health Check',
+  'Free Discovery Call',
   'Not sure yet'
 ];
+
+const PAID_SERVICE = 'Security Health Check';
+const DEPOSIT_AMOUNT_AED = 200;
+const DEPOSIT_AMOUNT_CENTS = 20000; // 200 AED in smallest currency unit (fils)
 
 const ALLOWED_SLOTS = [
   '10:00 AM',
@@ -138,8 +145,6 @@ function validateBooking(body) {
   };
 }
 
-const appointmentService = require('../services/appointmentService');
-
 // GET /booking/booked-slots - Return booked slots for dynamic UI disabling
 router.get('/booked-slots', (req, res) => {
   const date = typeof req.query.date === 'string' ? req.query.date.trim() : '';
@@ -165,6 +170,8 @@ router.get('/', (req, res) => {
     brandName: 'Usman Naeem Cyber Security Consulting',
     consultantName: 'Usman Naeem',
     services: ALLOWED_SERVICES,
+    paidService: PAID_SERVICE,
+    depositAmount: DEPOSIT_AMOUNT_AED,
     timeSlots: ALLOWED_SLOTS,
     minDate: getDubaiTodayString(),
     timeZone: 'Asia/Dubai',
@@ -184,8 +191,8 @@ router.get('/', (req, res) => {
   });
 });
 
-// POST /booking - Validate & save booking via appointmentService
-router.post('/', (req, res) => {
+// POST /booking - Validate & save booking, creating Stripe Checkout for paid service
+router.post('/', async (req, res) => {
   const result = validateBooking(req.body);
 
   if (!result.isValid) {
@@ -198,6 +205,8 @@ router.post('/', (req, res) => {
       brandName: 'Usman Naeem Cyber Security Consulting',
       consultantName: 'Usman Naeem',
       services: ALLOWED_SERVICES,
+      paidService: PAID_SERVICE,
+      depositAmount: DEPOSIT_AMOUNT_AED,
       timeSlots: ALLOWED_SLOTS,
       minDate: getDubaiTodayString(),
       timeZone: 'Asia/Dubai',
@@ -217,8 +226,11 @@ router.post('/', (req, res) => {
     });
   }
 
-  // Persist booking through appointmentService (checks double booking automatically)
   const bookingDateTime = `${result.sanitized.date} ${result.sanitized.timeSlot}`;
+  const isPaidService = result.sanitized.service === PAID_SERVICE;
+  const initialStatus = isPaidService ? 'Pending' : 'Booked';
+
+  // 1. First save the booking into SQLite database
   let savedBooking;
   try {
     savedBooking = appointmentService.createBooking({
@@ -229,7 +241,7 @@ router.post('/', (req, res) => {
       clientPhone: result.sanitized.phone,
       clientEmail: result.sanitized.email,
       message: result.sanitized.message,
-      status: 'Booked'
+      status: initialStatus
     });
   } catch (err) {
     const errorMsg = err.code === 'DOUBLE_BOOKING'
@@ -245,6 +257,8 @@ router.post('/', (req, res) => {
       brandName: 'Usman Naeem Cyber Security Consulting',
       consultantName: 'Usman Naeem',
       services: ALLOWED_SERVICES,
+      paidService: PAID_SERVICE,
+      depositAmount: DEPOSIT_AMOUNT_AED,
       timeSlots: ALLOWED_SLOTS,
       minDate: getDubaiTodayString(),
       timeZone: 'Asia/Dubai',
@@ -264,7 +278,98 @@ router.post('/', (req, res) => {
     });
   }
 
-  // Render confirmation screen with saved booking details
+  // 2. If it is the paid service: create Stripe Checkout Session
+  if (isPaidService) {
+    try {
+      const Stripe = require('stripe');
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeSecretKey) {
+        throw new Error('STRIPE_SECRET_KEY is not configured in the server environment.');
+      }
+
+      const stripe = new Stripe(stripeSecretKey);
+
+      // Build URLs from process.env.BASE_URL
+      const baseUrl = (process.env.BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        customer_email: result.sanitized.email,
+        client_reference_id: String(savedBooking.id),
+        line_items: [
+          {
+            price_data: {
+              currency: 'aed',
+              product_data: {
+                name: 'Security Health Check — Booking Deposit',
+                description: `One-off deposit for consultation with Usman Naeem on ${bookingDateTime} (Asia/Dubai)`,
+              },
+              unit_amount: DEPOSIT_AMOUNT_CENTS, // 200 AED in smallest unit (fils)
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          bookingId: String(savedBooking.id),
+          service: result.sanitized.service,
+          bookingDateTime: bookingDateTime,
+          clientName: result.sanitized.name,
+          clientEmail: result.sanitized.email
+        },
+        success_url: `${baseUrl}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/booking`,
+      });
+
+      // Update booking with stripeSessionId
+      appointmentService.updateStripeSessionId(savedBooking.id, session.id);
+
+      // Redirect visitor to Stripe-hosted checkout page
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json({
+          success: true,
+          requiresPayment: true,
+          redirectUrl: session.url
+        });
+      }
+
+      return res.redirect(303, session.url);
+    } catch (stripeErr) {
+      console.error('[Stripe Checkout Error]:', stripeErr);
+      const errorMsg = `Stripe checkout initiation failed: ${stripeErr.message}. Your reservation is preserved in Pending status.`;
+
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.status(500).json({ success: false, errors: [errorMsg] });
+      }
+
+      return res.status(500).render('booking', {
+        pageTitle: 'Payment Gateway Notice | Usman Naeem Cyber Security',
+        brandName: 'Usman Naeem Cyber Security Consulting',
+        consultantName: 'Usman Naeem',
+        services: ALLOWED_SERVICES,
+        paidService: PAID_SERVICE,
+        depositAmount: DEPOSIT_AMOUNT_AED,
+        timeSlots: ALLOWED_SLOTS,
+        minDate: getDubaiTodayString(),
+        timeZone: 'Asia/Dubai',
+        errors: [errorMsg],
+        formData: {
+          service: req.body.service || '',
+          date: req.body.date || '',
+          timeSlot: req.body.timeSlot || '',
+          name: req.body.name || '',
+          company: req.body.company || '',
+          phone: req.body.phone || '',
+          email: req.body.email || '',
+          message: req.body.message || ''
+        },
+        confirmed: false,
+        summary: null
+      });
+    }
+  }
+
+  // 3. For free services: skip payment and go directly to "Booked"
   const confirmedSummary = {
     ...result.sanitized,
     id: savedBooking.id,
@@ -286,6 +391,8 @@ router.post('/', (req, res) => {
     brandName: 'Usman Naeem Cyber Security Consulting',
     consultantName: 'Usman Naeem',
     services: ALLOWED_SERVICES,
+    paidService: PAID_SERVICE,
+    depositAmount: DEPOSIT_AMOUNT_AED,
     timeSlots: ALLOWED_SLOTS,
     minDate: getDubaiTodayString(),
     timeZone: 'Asia/Dubai',
@@ -296,4 +403,85 @@ router.post('/', (req, res) => {
   });
 });
 
+// GET /booking-success - Server-side verification of Stripe payment
+async function handleBookingSuccess(req, res) {
+  const sessionId = typeof req.query.session_id === 'string' ? req.query.session_id.trim() : '';
+
+  if (!sessionId) {
+    return res.render('booking-success', {
+      pageTitle: 'Payment Not Completed | Usman Naeem Cyber Security',
+      success: false,
+      booking: null,
+      session: null,
+      error: 'No checkout session identifier was provided in the return URL.'
+    });
+  }
+
+  // Find booking by stripeSessionId in SQLite database
+  const booking = appointmentService.getBookingByStripeSessionId(sessionId);
+  if (!booking) {
+    return res.render('booking-success', {
+      pageTitle: 'Booking Not Found | Usman Naeem Cyber Security',
+      success: false,
+      booking: null,
+      session: null,
+      error: 'No reservation was found matching this payment checkout session.'
+    });
+  }
+
+  // Retrieve checkout session from Stripe server-side (never trust redirect alone)
+  try {
+    const Stripe = require('stripe');
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
+      throw new Error('STRIPE_SECRET_KEY is not configured in server environment.');
+    }
+
+    const stripe = new Stripe(stripeSecretKey);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    // Only set status to "Booked" if payment_status is "paid" — otherwise it stays "Pending"
+    if (session && session.payment_status === 'paid') {
+      if (booking.status !== 'Booked') {
+        appointmentService.updateStatus(booking.id, 'Booked');
+        booking.status = 'Booked';
+      }
+
+      return res.render('booking-success', {
+        pageTitle: 'Deposit Received & Booking Confirmed | Usman Naeem Cyber Security',
+        success: true,
+        booking,
+        session,
+        amountPaid: 'AED 200.00',
+        error: null
+      });
+    } else {
+      // payment_status is not 'paid' (unpaid, incomplete, etc.) -> stays 'Pending'
+      return res.render('booking-success', {
+        pageTitle: 'Payment Incomplete | Usman Naeem Cyber Security',
+        success: false,
+        booking,
+        session,
+        error: `Payment was not completed (Stripe status: ${session ? session.payment_status : 'unknown'}). Your appointment remains Pending and is not yet confirmed.`
+      });
+    }
+  } catch (stripeErr) {
+    console.error('[Stripe Session Retrieval Error]:', stripeErr);
+    return res.render('booking-success', {
+      pageTitle: 'Payment Verification Notice | Usman Naeem Cyber Security',
+      success: false,
+      booking,
+      session: null,
+      error: `Could not verify payment status with Stripe: ${stripeErr.message}. Your booking remains in Pending status.`
+    });
+  }
+}
+
+// Register route on router as well
+router.get('/booking-success', handleBookingSuccess);
+
+// Export router and success handler for mounting at root
 module.exports = router;
+module.exports.handleBookingSuccess = handleBookingSuccess;
+module.exports.PAID_SERVICE = PAID_SERVICE;
+module.exports.DEPOSIT_AMOUNT_AED = DEPOSIT_AMOUNT_AED;

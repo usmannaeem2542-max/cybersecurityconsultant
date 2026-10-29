@@ -1,0 +1,179 @@
+<%- include('partials/header') %>
+
+<main class="py-5">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <% if (success && booking) { %>
+          <!-- SUCCESS CONFIRMATION STATE -->
+          <div class="booking-card p-4 p-md-5 text-center">
+            
+            <div class="confirmed-badge-box mx-auto mb-3" style="width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0, 245, 212, 0.15); border: 2px solid var(--teal-primary); box-shadow: 0 0 25px rgba(0, 245, 212, 0.4);">
+              <i class="bi bi-shield-check text-teal" style="font-size: 2.2rem;"></i>
+            </div>
+
+            <div class="section-tag mb-2">
+              <i class="bi bi-check-circle-fill"></i> Stripe Payment Confirmed
+            </div>
+            
+            <h1 class="h2 mb-2">Deposit Received &amp; Booking Confirmed!</h1>
+            <p class="text-muted small mb-4">
+              Your one-off consultation deposit has been verified through Stripe. Your discovery session with Usman Naeem is officially reserved.
+            </p>
+
+            <!-- Summary Specifications Box -->
+            <div class="summary-details-box p-4 mb-4 text-start">
+              <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-3 border-bottom border-secondary-subtle gap-2">
+                <div>
+                  <span class="text-muted small text-uppercase font-mono">Reference</span>
+                  <div class="h5 font-mono text-teal mb-0">#<%= booking.id %></div>
+                </div>
+                <div class="text-end">
+                  <span class="text-muted small text-uppercase font-mono">Status</span>
+                  <div>
+                    <span class="badge bg-success-subtle text-success border border-success">
+                      <i class="bi bi-check2-circle me-1"></i> Booked
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <div class="summary-label">Target Service</div>
+                  <div class="summary-val text-white fw-semibold">
+                    <%= booking.service %>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="summary-label">Deposit Amount</div>
+                  <div class="summary-val text-teal fw-bold font-mono">
+                    <i class="bi bi-credit-card-2-front me-1"></i> <%= amountPaid || 'AED 200.00' %> (Paid)
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="summary-label">Scheduled Date &amp; Time</div>
+                  <div class="summary-val text-teal font-mono">
+                    <i class="bi bi-clock-fill me-1"></i> <%= booking.bookingDateTime %> (GST)
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="summary-label">Client Details</div>
+                  <div class="summary-val text-white">
+                    <strong><%= booking.clientName %></strong>
+                    <% if (booking.clientCompany) { %>
+                      <span class="text-muted">(<%= booking.clientCompany %>)</span>
+                    <% } %>
+                    <br>
+                    <span class="small text-muted"><%= booking.clientEmail %> &middot; <%= booking.clientPhone %></span>
+                  </div>
+                </div>
+
+                <% if (booking.message) { %>
+                  <div class="col-12">
+                    <div class="summary-label">Objectives &amp; Notes</div>
+                    <div class="summary-val text-light fst-italic small">
+                      &ldquo;<%= booking.message %>&rdquo;
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Next Steps Guidance -->
+            <div class="alert alert-info bg-navy-subtle border-teal text-start mb-4 py-3" role="alert">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-info-circle-fill text-teal fs-5"></i>
+                <strong class="text-teal">What happens next?</strong>
+              </div>
+              <p class="small text-muted mb-0">
+                A calendar invite with Google Meet coordinates and initial scoping checklist has been queued for <strong><%= booking.clientEmail %></strong>. A formal invoice for the AED 200 deposit will be delivered to your email.
+              </p>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+              <a href="/" class="btn btn-teal-glow px-4 py-2">
+                <i class="bi bi-house-door me-1"></i> Return to Home
+              </a>
+              <a href="/booking" class="btn btn-outline-teal px-4 py-2">
+                <i class="bi bi-calendar-plus me-1"></i> Book Another Session
+              </a>
+            </div>
+
+          </div>
+
+        <% } else { %>
+
+          <!-- PAYMENT NOT COMPLETED / ERROR STATE -->
+          <div class="booking-card p-4 p-md-5 text-center">
+            
+            <div class="confirmed-badge-box mx-auto mb-3" style="width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);">
+              <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2.2rem;"></i>
+            </div>
+
+            <div class="section-tag mb-2 text-warning border-warning">
+              <i class="bi bi-clock-history"></i> Payment Incomplete
+            </div>
+            
+            <h1 class="h2 mb-2">Deposit Payment Not Completed</h1>
+            <p class="text-muted small mb-4">
+              <%= error || 'We could not verify payment completion for this consultation session.' %>
+            </p>
+
+            <% if (booking) { %>
+              <div class="summary-details-box p-4 mb-4 text-start">
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom border-secondary-subtle">
+                  <span class="text-muted small font-mono">RESERVATION #<%= booking.id %></span>
+                  <span class="badge bg-warning-subtle text-warning border border-warning">
+                    <i class="bi bi-hourglass-split me-1"></i> <%= booking.status %>
+                  </span>
+                </div>
+                <div class="row g-2 small">
+                  <div class="col-sm-6">
+                    <span class="text-muted">Target Service:</span> <strong class="text-light"><%= booking.service %></strong>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted">Date &amp; Time:</span> <strong class="text-teal"><%= booking.bookingDateTime %> (GST)</strong>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted">Client:</span> <span class="text-light"><%= booking.clientName %></span>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted">Email:</span> <span class="text-light"><%= booking.clientEmail %></span>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+
+            <div class="alert alert-dark bg-navy-subtle border-secondary text-start mb-4 py-3">
+              <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-shield-slash text-warning fs-5 flex-shrink-0 mt-1"></i>
+                <div class="small text-muted">
+                  Per our security policy, bookings requiring a deposit remain in <strong>Pending</strong> status until verified through Stripe. No appointment is locked until payment has settled.
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              <a href="/booking" class="btn btn-teal-glow px-4 py-2">
+                <i class="bi bi-arrow-repeat me-1"></i> Retry Booking
+              </a>
+              <a href="/#contact" class="btn btn-outline-teal px-4 py-2">
+                <i class="bi bi-envelope me-1"></i> Contact Usman Directly
+              </a>
+            </div>
+
+          </div>
+
+        <% } %>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

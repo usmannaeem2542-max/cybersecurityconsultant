@@ -73,6 +73,7 @@ const adminRouter = require('./routes/admin');
 // Mount Routers
 app.use('/booking', bookingRouter);
 app.use('/contact', contactRouter);
+app.get('/booking-success', (req, res, next) => bookingRouter.handleBookingSuccess(req, res, next));
 app.use('/', adminRouter);
 
 app.get('/', (req, res) => {
