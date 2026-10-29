@@ -38,6 +38,7 @@ try {
       status TEXT NOT NULL DEFAULT 'Booked',
       stripeSessionId TEXT,
       confirmationEmailSentAt TEXT,
+      lastReminderSentAt TEXT,
       createdAt TEXT NOT NULL
     );
 
@@ -72,6 +73,12 @@ try {
     if (!hasEmailSentCol) {
       db.exec('ALTER TABLE bookings ADD COLUMN confirmationEmailSentAt TEXT;');
       console.log('[Database] Added confirmationEmailSentAt column to existing bookings table');
+    }
+
+    const hasReminderCol = tableInfo.some(col => col.name === 'lastReminderSentAt');
+    if (!hasReminderCol) {
+      db.exec('ALTER TABLE bookings ADD COLUMN lastReminderSentAt TEXT;');
+      console.log('[Database] Added lastReminderSentAt column to existing bookings table');
     }
   } catch (colErr) {
     console.warn('[Database] Could not verify/alter bookings table columns:', colErr.message);
@@ -162,6 +169,13 @@ try {
             const [sentAt, id] = params;
             const b = store.bookings.find(item => item.id === Number(id));
             if (b) b.confirmationEmailSentAt = sentAt;
+            saveStore();
+            return {};
+          }
+          if (normalizedSql.startsWith('UPDATE bookings SET lastReminderSentAt = ? WHERE id = ?')) {
+            const [sentAt, id] = params;
+            const b = store.bookings.find(item => item.id === Number(id));
+            if (b) b.lastReminderSentAt = sentAt;
             saveStore();
             return {};
           }

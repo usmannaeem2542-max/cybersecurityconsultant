@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const appointmentService = require('../services/appointmentService');
+const emailService = require('../services/emailService');
 
 // Middleware to protect admin routes
 function requireAdmin(req, res, next) {
@@ -76,7 +77,8 @@ router.get('/admin', requireAdmin, (req, res) => {
     user: req.session.user,
     bookings,
     enquiries,
-    notification: req.query.msg || null
+    notification: req.query.msg || null,
+    errorMessage: req.query.err || null
   });
 });
 
@@ -89,6 +91,31 @@ router.post('/admin/bookings/:id/cancel', requireAdmin, (req, res) => {
     console.error(`Failed to cancel booking #${bookingId}:`, err);
   }
   res.redirect('/admin?msg=Booking%20cancelled%20successfully');
+});
+
+// POST /admin/bookings/:id/send-reminder - Send session reminder email to client
+router.post('/admin/bookings/:id/send-reminder', requireAdmin, async (req, res) => {
+  const bookingId = req.params.id;
+  try {
+    const booking = appointmentService.getBookingById(bookingId);
+    if (!booking) {
+      return res.redirect('/admin?err=Booking%20not%20found');
+    }
+
+    if (booking.status !== 'Booked') {
+      return res.redirect('/admin?err=Reminders%20can%20only%20be%20sent%20for%20confirmed%20Booked%20sessions');
+    }
+
+    const result = await emailService.sendBookingReminder(booking);
+    if (result.success) {
+      return res.redirect(`/admin?msg=Reminder%20email%20sent%20successfully%20to%20${encodeURIComponent(booking.clientEmail)}`);
+    } else {
+      return res.redirect(`/admin?err=Failed%20to%20send%20reminder:%20${encodeURIComponent(result.error || 'SMTP delivery issue')}`);
+    }
+  } catch (err) {
+    console.error(`[Admin Reminder Error] Booking #${bookingId}:`, err);
+    return res.redirect(`/admin?err=Error%20sending%20reminder:%20${encodeURIComponent(err.message)}`);
+  }
 });
 
 module.exports = router;

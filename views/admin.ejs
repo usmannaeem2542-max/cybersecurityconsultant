@@ -38,6 +38,14 @@
       </div>
     <% } %>
 
+    <!-- Error Alert -->
+    <% if (locals.errorMessage) { %>
+      <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+        <div><%= errorMessage %></div>
+      </div>
+    <% } %>
+
     <!-- KPI Statistics -->
     <div class="row g-3 mb-5">
       <% 
@@ -75,6 +83,92 @@
         </div>
       </div>
     </div>
+
+    <!-- STAFF SECTION: CONFIRMED SESSIONS & EMAIL REMINDERS -->
+    <section class="mb-5" id="staff-section">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h2 class="h4 mb-1">
+            <i class="bi bi-person-workspace me-2 text-warning"></i>Staff Section: Confirmed Sessions
+            <span class="badge bg-warning-subtle text-warning border border-warning ms-2 fs-6">Status: Booked</span>
+          </h2>
+          <p class="text-muted small mb-0">
+            Dedicated staff panel to trigger email reminders for confirmed client discovery sessions.
+          </p>
+        </div>
+        <span class="badge bg-navy-subtle text-teal border border-teal font-mono px-3 py-2">
+          <%= bookings.filter(b => b.status === 'Booked').length %> Booked
+        </span>
+      </div>
+
+      <% const bookedList = bookings.filter(b => b.status === 'Booked'); %>
+      <% if (bookedList.length === 0) { %>
+        <div class="booking-card p-4 text-center text-muted">
+          <i class="bi bi-calendar-check fs-2 text-dim mb-2 d-block"></i>
+          <div class="fw-semibold">No confirmed sessions found</div>
+          <p class="small text-muted mb-0">Active bookings with status &ldquo;Booked&rdquo; will appear here for staff reminder dispatch.</p>
+        </div>
+      <% } else { %>
+        <div class="booking-card p-0 overflow-hidden shadow mb-4">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0 custom-admin-table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 220px;">Client Name</th>
+                  <th scope="col" style="width: 220px;">Date and Time (GST)</th>
+                  <th scope="col">Service</th>
+                  <th scope="col" style="width: 170px;">Reminder Status</th>
+                  <th scope="col" style="width: 170px;" class="text-end">Staff Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% bookedList.forEach(b => { %>
+                  <tr>
+                    <td>
+                      <div class="fw-bold text-white"><%= b.clientName %></div>
+                      <% if (b.clientCompany) { %>
+                        <div class="small text-muted"><%= b.clientCompany %></div>
+                      <% } %>
+                      <div class="small">
+                        <a href="mailto:<%= b.clientEmail %>" class="text-teal text-decoration-none font-mono" style="font-size: 0.78rem;">
+                          <%= b.clientEmail %>
+                        </a>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-teal font-mono">
+                        <i class="bi bi-clock-fill me-1"></i><%= b.bookingDateTime %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-light"><%= b.service %></div>
+                    </td>
+                    <td>
+                      <% if (b.lastReminderSentAt) { %>
+                        <span class="badge bg-success-subtle text-success border border-success font-mono" style="font-size: 0.72rem;" title="<%= b.lastReminderSentAt %>">
+                          <i class="bi bi-check2-all me-1"></i> Sent <%= new Date(b.lastReminderSentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                        </span>
+                      <% } else { %>
+                        <span class="badge bg-secondary-subtle text-muted border border-secondary font-mono" style="font-size: 0.72rem;">
+                          <i class="bi bi-hourglass me-1"></i> Not sent yet
+                        </span>
+                      <% } %>
+                    </td>
+                    <td class="text-end">
+                      <form action="/admin/bookings/<%= b.id %>/send-reminder" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-outline-warning btn-sm px-3 py-1 font-mono fw-semibold d-inline-flex align-items-center gap-1" id="staffReminderBtn-<%= b.id %>" title="Send reminder email to <%= b.clientEmail %>">
+                          <i class="bi bi-bell-fill"></i> Send reminder
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+    </section>
 
     <!-- SECTION 1: UPCOMING BOOKINGS (SOONEST FIRST) -->
     <section class="mb-5">
@@ -169,15 +263,24 @@
                       <% } %>
                     </td>
                     <td class="text-end">
-                      <% if (b.status !== 'Cancelled') { %>
-                        <form action="/admin/bookings/<%= b.id %>/cancel" method="POST" onsubmit="return confirm('Cancel booking #<%= b.id %> for <%= b.clientName %>? This will free up the time slot.');">
-                          <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="Cancel this booking">
-                            <i class="bi bi-x-lg me-1"></i> Cancel
-                          </button>
-                        </form>
-                      <% } else { %>
-                        <span class="text-muted small fst-italic">Released</span>
-                      <% } %>
+                      <div class="d-flex justify-content-end gap-1">
+                        <% if (b.status === 'Booked') { %>
+                          <form action="/admin/bookings/<%= b.id %>/send-reminder" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-warning btn-sm px-2 py-1" title="Send reminder email to <%= b.clientEmail %>">
+                              <i class="bi bi-bell-fill"></i>
+                            </button>
+                          </form>
+                        <% } %>
+                        <% if (b.status !== 'Cancelled') { %>
+                          <form action="/admin/bookings/<%= b.id %>/cancel" method="POST" onsubmit="return confirm('Cancel booking #<%= b.id %> for <%= b.clientName %>? This will free up the time slot.');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="Cancel this booking">
+                              <i class="bi bi-x-lg me-1"></i> Cancel
+                            </button>
+                          </form>
+                        <% } else { %>
+                          <span class="text-muted small fst-italic">Released</span>
+                        <% } %>
+                      </div>
                     </td>
                   </tr>
                 <% }) %>

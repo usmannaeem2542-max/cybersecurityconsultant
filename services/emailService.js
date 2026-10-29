@@ -14,7 +14,8 @@ function escapeHtml(str) {
 
 /**
  * Creates and configures the Nodemailer SMTP transporter using .env variables.
- * Fallback to jsonTransport in test/development if SMTP_HOST is not configured.
+ * Fallback to jsonTransport in test/development if SMTP_HOST is not configured
+ * or placeholder test credentials are used.
  */
 function createTransporter() {
   const host = process.env.SMTP_HOST;
@@ -22,8 +23,16 @@ function createTransporter() {
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  if (!host) {
-    // Development fallback: logs email as JSON without throwing connection errors
+  const isPlaceholder = !host || 
+    !user || 
+    !pass || 
+    user.includes('test_smtp') || 
+    user.includes('your_smtp') || 
+    pass.includes('test_smtp') || 
+    pass.includes('your_smtp');
+
+  if (isPlaceholder) {
+    // Development fallback: logs email as JSON without throwing connection or auth errors
     return nodemailer.createTransport({
       jsonTransport: true
     });
@@ -33,7 +42,7 @@ function createTransporter() {
     host,
     port,
     secure: port === 465,
-    auth: (user && pass) ? { user, pass } : undefined,
+    auth: { user, pass },
     tls: {
       rejectUnauthorized: false
     }
@@ -211,8 +220,109 @@ ${signOffLine}
   }
 }
 
+/**
+ * Sends an appointment reminder email to the client for a "Booked" session.
+ *
+ * Subject: "Reminder: your session"
+ * Body: "Hi {ClientName}, a reminder that your {Service} session with [your name] is on {Date} at {Time}. Reply to reschedule."
+ * Sign-off line: "[brand name] · [website]"
+ *
+ * @param {Object} booking - Booking database record
+ * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
+ */
+async function sendBookingReminder(booking) {
+  if (!booking || !booking.id) {
+    return { success: false, error: 'Invalid booking record provided.' };
+  }
+
+  const clientEmail = booking.clientEmail;
+  if (!clientEmail) {
+    return { success: false, error: 'No client email associated with this booking.' };
+  }
+
+  const brandName = 'Usman Naeem Cyber Security Consulting';
+  const consultantName = 'Usman Naeem';
+  const websiteUrl = (process.env.BASE_URL || 'https://cybersecurityconsultant-ekkl.vercel.app').replace(/\/+$/, '');
+  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'usman@usmancybersecurity.com';
+
+  // Extract Date and Time from bookingDateTime (e.g. "2026-11-20 10:00 AM")
+  const rawDateTime = booking.bookingDateTime || '';
+  const dtParts = rawDateTime.trim().split(' ');
+  const dateStr = dtParts[0] || 'Scheduled Date';
+  const timeStr = dtParts.slice(1).join(' ') || 'Scheduled Time';
+
+  const clientName = booking.clientName || 'Valued Client';
+  const service = booking.service || 'Security Consultation';
+  const signOffLine = `${brandName} · ${websiteUrl}`;
+
+  // Plain Text Body
+  const textContent = `Hi ${clientName}, a reminder that your ${service} session with ${consultantName} is on ${dateStr} at ${timeStr}. Reply to reschedule.
+
+${signOffLine}`;
+
+  // HTML Body
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reminder: your session</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #071526; color: #ffffff; margin: 0; padding: 24px; }
+    .email-container { max-width: 600px; margin: 0 auto; background-color: #0d2138; border: 1px solid rgba(0, 245, 212, 0.25); border-radius: 12px; padding: 32px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    .header-tag { font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #00f5d4; margin-bottom: 8px; }
+    h1 { color: #ffffff; font-size: 20px; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
+    p { color: #cbd5e1; font-size: 15px; line-height: 1.6; margin: 0 0 16px; }
+    .signoff { font-size: 12px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 28px; text-align: center; }
+    .signoff a { color: #00f5d4; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header-tag">UPCOMING SESSION REMINDER</div>
+    <h1>Reminder: your session</h1>
+    <p>Hi ${escapeHtml(clientName)}, a reminder that your <strong>${escapeHtml(service)}</strong> session with <strong>${escapeHtml(consultantName)}</strong> is on <strong>${escapeHtml(dateStr)}</strong> at <strong>${escapeHtml(timeStr)}</strong>. Reply to reschedule.</p>
+    <div class="signoff">
+      ${escapeHtml(brandName)} · <a href="${escapeHtml(websiteUrl)}">${escapeHtml(websiteUrl)}</a>
+    </div>
+  </div>
+</body>
+</html>
+`.trim();
+
+  const mailOptions = {
+    from: `"${brandName}" <${fromAddress}>`,
+    to: clientEmail,
+    subject: 'Reminder: your session',
+    text: textContent,
+    html: htmlContent
+  };
+
+  try {
+    const transporter = createTransporter();
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Email Service] Reminder email successfully sent to ${clientEmail} for booking #${booking.id}. (MessageId: ${info.messageId || 'json-simulated'})`);
+
+    if (typeof appointmentService.markReminderSent === 'function') {
+      appointmentService.markReminderSent(booking.id);
+    }
+
+    return {
+      success: true,
+      messageId: info.messageId || 'json-simulated'
+    };
+  } catch (err) {
+    console.error(`[Email Service Error] Failed to send reminder email for booking #${booking.id} to ${clientEmail}:`, err.message);
+    return {
+      success: false,
+      error: err.message
+    };
+  }
+}
+
 module.exports = {
   sendBookingConfirmation,
+  sendBookingReminder,
   escapeHtml,
   createTransporter
 };

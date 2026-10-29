@@ -60,6 +60,10 @@ const updateBookingEmailSentStmt = db.prepare(`
   UPDATE bookings SET confirmationEmailSentAt = ? WHERE id = ?
 `);
 
+const updateBookingReminderSentStmt = db.prepare(`
+  UPDATE bookings SET lastReminderSentAt = ? WHERE id = ?
+`);
+
 // Enquiries Statements
 const insertEnquiryStmt = db.prepare(`
   INSERT INTO enquiries (name, email, company, message, createdAt)
@@ -229,6 +233,15 @@ function markConfirmationEmailSent(id) {
   updateBookingEmailSentStmt.run(now, Number(id));
 }
 
+/**
+ * Records the timestamp when a reminder email was sent.
+ */
+function markReminderSent(id) {
+  if (!id) return;
+  const now = new Date().toISOString();
+  updateBookingReminderSentStmt.run(now, Number(id));
+}
+
 // ============================================================================
 // Enquiries Operations
 // ============================================================================
@@ -326,6 +339,7 @@ module.exports = {
   getBookingByStripeSessionId,
   updateStripeSessionId,
   markConfirmationEmailSent,
+  markReminderSent,
   createEnquiry,
   listEnquiries,
   findUserByEmail,
